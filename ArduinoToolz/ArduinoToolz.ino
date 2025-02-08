@@ -1,6 +1,8 @@
 #include <LiquidCrystal_I2C.h>
 #include <IRremote.hpp>
 #include <DFRobot_DHT11.h>
+#include <EEPROM.h>
+#include <Wire.h>
 DFRobot_DHT11 DHT;
 #define DHT11_PIN 4
 
@@ -16,6 +18,7 @@ int hrs12 = 12;
 int data = 0;
 
 // Flags :
+int irpin;
 int exitloop;
 int ok = 0;
 int ampmflag = 0;
@@ -24,19 +27,21 @@ int c;
 int Pin;
 int pingPin;
 int pongPin;
-int pinA = 2;
-int pinB = 3;
-int pinC = 4;
-int pinD = 5;
-int pinE = 6;
-int pinF = 7;
-int pinG = 8;
-int pinH = 9;
+int pinA = 9;
+int pinB = 8;
+int pinC = 7;
+int pinD = 6;
+int pinE = 5;
+int pinF = 4;
+int pinG = 3;
+int pinH = 2;
 int VpinE;
 int VpinF;
 int VpinG;
 int VpinH;
-
+byte value;
+int address;
+int RW;
 
 byte ball[] = {
   B00100,
@@ -56,7 +61,7 @@ void setup() {
   lcd.clear();
   lcd.print("  Arduino Toolz");
   lcd.setCursor(4, 3);
-  lcd.print("beta 0.6");
+  lcd.print("beta 0.7.1");
   delay(2000);
   lcd.clear();
 }
@@ -81,18 +86,12 @@ void CommandSet() {
   String data = Serial.readString();
   data.trim();
 
-  if (data == "h") {
-    lcd.clear();
-    lcd.print("HEIL HITLER");
-    delay(500);
-  }   
-
-  else if (data == "Terminal") {
+  if (data == "Terminal") {
     lcd.clear();
     lcd.print("   Terminal");
     delay(1000);
     lcd.clear();
-    monitorMode();
+    Terminal();
   }  
 
   else if (data == "Clock") {
@@ -100,7 +99,7 @@ void CommandSet() {
     Clock();
   }
 
-  else if (data == "ball") {
+  else if (data == "Customchar") {
     lcd.clear();
     lcd.write(byte(0));
     delay(2000);
@@ -118,7 +117,7 @@ void CommandSet() {
       lcd.setCursor(0, 0);
       lcd.print("Waiting for PIN");
 
-      if (Serial.available() > 0) {
+      if (Serial.available()) {
         ok = 1;
         Pin = Serial.read() - 48;
       }
@@ -196,17 +195,29 @@ void CommandSet() {
 
   else if (data == "IR") {
 
-    int irpin = 2;
     lcd.setCursor(0, 0);
     lcd.print("IR Receiver");
     delay(2000);
     lcd.clear();
+
+    while (ok != 1) {
+      lcd.setCursor(0, 0);
+      lcd.print("Waiting for PIN");
+
+      if (Serial.available()) {
+        ok = 1;
+        irpin = Serial.read() - 48;
+      }
+
+    }
+
+    lcd.clear();
     IrReceiver.begin(irpin, ENABLE_LED_FEEDBACK);
-    ir();
+    IR();
   }
 
   else if (data == "Sensor") {
-    S();
+    Sensor();
   }
 
   else if (data == "UltraR") {
@@ -252,9 +263,48 @@ void CommandSet() {
     keypad();
 
   }
-  
-}
 
+  else if (data == "EEPROM") {
+
+    while (ok != 1) {
+      lcd.setCursor(0, 0);
+      lcd.print("   Waiting for ");
+      lcd.setCursor(4, 3);
+      lcd.print("Address");
+
+      if (Serial.available()) {
+        ok = 1;
+        address = Serial.read() - 48;
+
+        if (Serial.available()) {
+          address = address*10 + Serial.read() - 48;}
+
+        if (Serial.available()) {
+          address = address*10 + Serial.read() - 48;}
+
+        if (Serial.available()) {
+          address = address*10 + Serial.read() - 48;}            
+
+      }
+
+    }
+    ok = 0;
+    
+    while (ok != 1) {
+      lcd.setCursor(0, 0);
+      lcd.print("Read or Write?  ");
+      lcd.setCursor(0, 3);
+      lcd.print("Read=0  Write=1");
+
+      if (Serial.available()) {
+        ok = 1;
+        RW = Serial.read() - 48;
+      }
+    }
+  EPROM();
+  }
+
+}
 
 void Clock() {
 
@@ -453,34 +503,34 @@ void clockcounter() {
   
 }
 
-void monitorMode() {
+void Terminal() {
 
   if (Serial.available()) {
 
+    data = 0;
+
     if (Serial.available() > 0) {
-      String Serialbuff = Serial.readStringUntil('/n');
-      lcd.write(Serial.read());
+      char data = Serial.read();
+      lcd.write(data);
+      Serial.write(data);
       delay(10);
       c = c + 1;
     }
 
-
     if (c == 16) {
       lcd.setCursor(0, 3);
-      monitorMode();
-      }
+    }
  
     if (c == 32) {
       c = 0;
       delay(50);
       lcd.clear();
-      lcd.setCursor(0, 0);}
-      monitorMode();
+      lcd.setCursor(0, 0);
     }
 
-    else {
-      monitorMode();
-    }
+  }
+
+  Terminal();
 
 }
 
@@ -564,7 +614,7 @@ while (exitloop =! 1) {
 
 }
 
-void ir() {
+void IR() {
 
 while (exitloop =! 1) {
 
@@ -590,7 +640,7 @@ while (exitloop =! 1) {
 
 }
 
-void S() {
+void Sensor() {
 
 while (exitloop =! 1) {
 
@@ -810,5 +860,57 @@ while (exitloop != 1) {
   }
 
 }
+
+}
+
+void EPROM() {
+
+  lcd.clear();
+
+  switch (RW) {
+    case 0:
+    value = EEPROM.read(address);
+    lcd.print("  The value of ");
+    lcd.setCursor(0, 3);
+    lcd.print("Addr ");
+    lcd.print(address);
+    lcd.print(" is ");
+    lcd.print(value);
+    delay(2000);
+    lcd.clear();
+    break;
+
+    case 1:
+    ok = 0;
+    while (ok != 1) {
+      lcd.setCursor(0, 0);
+      lcd.print("   Waiting for ");
+      lcd.setCursor(6, 3);
+      lcd.print("value");
+
+      if (Serial.available()) {
+        ok = 1;
+        value = Serial.read() - 48;
+
+        if (Serial.available()) {
+          value = value*10 + Serial.read() - 48;}
+
+        if (Serial.available()) {
+          value = value*10 + Serial.read() - 48;}
+  
+      }
+    }  
+    EEPROM.write(address, value);
+    lcd.clear();
+    lcd.print("Value ");
+    lcd.print(value);
+    lcd.print(" Was writ");
+    lcd.setCursor(0, 3);
+    lcd.print("ten to Addr ");
+    lcd.print(address);
+    delay(4000);
+    lcd.clear();
+      
+  }
 
 }
