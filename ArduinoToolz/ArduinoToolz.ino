@@ -960,14 +960,14 @@ void EPROM() {
     lcd.print(" Was ");
     lcd.setCursor(0, 3);
     lcd.print("   written to ");
-    delay(2000);
+    delay(1000);
     lcd.clear();
     lcd.print("  Address ");
     lcd.print(address);
     delay(2000);
     lcd.clear();
     break;
-    
+
     case 2:
       for (int i = 0 ; i < EEPROM.length() ; i++) {
         EEPROM.write(i, 0);
