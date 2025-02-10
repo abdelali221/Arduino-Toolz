@@ -132,7 +132,7 @@ void CommandSet() {
       lcd.print(" number!");
       delay(1000);
       lcd.clear();
-      loop();
+      return;
     }
 
     if (Pin > 5) {
@@ -141,7 +141,7 @@ void CommandSet() {
       lcd.print(" number!");
       delay(1000);
       lcd.clear();
-      loop();
+      return;
     }
 
     analog();
@@ -178,7 +178,7 @@ void CommandSet() {
       lcd.print(" number!");
       delay(1000);
       lcd.clear();
-      loop();
+      return;
     }
 
     if (Pin > 13) {
@@ -187,7 +187,7 @@ void CommandSet() {
       lcd.print(" number!");
       delay(1000);
       lcd.clear();
-      loop();
+      return;
     }
 
     digital();
@@ -266,41 +266,86 @@ void CommandSet() {
 
   else if (data == "EEPROM") {
 
-    while (ok != 1) {
-      lcd.setCursor(0, 0);
-      lcd.print("   Waiting for ");
-      lcd.setCursor(4, 3);
-      lcd.print("Address");
+    lcd.print("  EEPROM Tool");
+    delay(2000);
 
-      if (Serial.available()) {
-        ok = 1;
-        address = Serial.read() - 48;
-
-        if (Serial.available()) {
-          address = address*10 + Serial.read() - 48;}
-
-        if (Serial.available()) {
-          address = address*10 + Serial.read() - 48;}
-
-        if (Serial.available()) {
-          address = address*10 + Serial.read() - 48;}            
-
-      }
-
-    }
-    ok = 0;
-    
     while (ok != 1) {
       lcd.setCursor(0, 0);
       lcd.print("Read or Write?  ");
       lcd.setCursor(0, 3);
-      lcd.print("Read=0  Write=1");
+      lcd.print("R=0  W=1 ");
 
       if (Serial.available()) {
         ok = 1;
         RW = Serial.read() - 48;
+        lcd.print(RW);
+        delay(500);
+
+        if (RW == 1) {
+          
+          ok = 0;
+          lcd.clear();
+
+          while (ok != 1) {
+            lcd.setCursor(0, 0);
+            lcd.print("Clear or Write?  ");
+            lcd.setCursor(0, 3);
+            lcd.print("C=2  W=1 ");
+
+            if (Serial.available()) {
+              ok = 1;
+              RW = Serial.read() - 48;
+              lcd.print(RW);
+              delay(500);
+            }
+          }
+          
+        }
+
+        else {
+          lcd.clear();
+        }
+
       }
+
+    }  
+
+    ok = 0;
+
+    if (RW != 2 ) {
+      while (ok != 1) {
+        lcd.setCursor(0, 0);
+        lcd.print("   Waiting for ");
+        lcd.setCursor(4, 3);
+        lcd.print("Address ");
+
+        if (Serial.available()) {
+          ok = 1;
+          address = Serial.read() - 48;
+
+          if (Serial.available()) {
+            address = address*10 + Serial.read() - 48;}
+
+            if (Serial.available()) {
+              address = address*10 + Serial.read() - 48;}
+
+              if (Serial.available()) {
+                address = address*10 + Serial.read() - 48;}            
+          
+          lcd.print(address);
+          delay(500);
+        }
+      }
+     
     }
+    if (address > EEPROM.length()) {
+      lcd.clear();
+      lcd.print("Invalid Address!");
+      delay(3000);
+      lcd.clear();
+      return;
+    }
+        
   EPROM();
   }
 
@@ -312,7 +357,7 @@ while (exitloop != 1) {
 
   lcd.setCursor(3, 4);
   lcd.print("Clock");
-  delay(988);
+  delay(975);
   clockcounter();
   lcd.setCursor(curs, 0);
 
@@ -431,6 +476,13 @@ void GetClock() {
     GetClock();
   } 
 
+  if (hrs < 0) {
+    Serial.print("Invalid clock!");
+    Serial.print("Format Hhh");
+    hrs = 0;
+    GetClock();
+  }
+
   if (hrs12 >= 13) {
     Serial.print("Invalid clock!");
     Serial.print("Format Hhh");
@@ -445,7 +497,21 @@ void GetClock() {
     GetClock();
   }
 
+  else if (min < 0) {
+    Serial.print("Invalid clock!");
+    Serial.print("Format Mmm");
+    min = 0;
+    GetClock();
+  }
+
   else if (sec >= 60) {
+    Serial.print("Invalid clock!");
+    Serial.print("Format Sss");
+    sec = 0;
+    GetClock();
+  }
+
+  else if (sec < 0) {
     Serial.print("Invalid clock!");
     Serial.print("Format Sss");
     sec = 0;
@@ -592,7 +658,7 @@ while (exitloop != 1) {
 
 void digital() {
 
-while (exitloop =! 1) {
+while (exitloop != 1) {
 
   lcd.setCursor(0, 0);
   lcd.print("PIN D");
@@ -601,14 +667,15 @@ while (exitloop =! 1) {
   pinMode(Pin, INPUT);
   lcd.print(digitalRead(Pin));
 
-    if (Serial.available()) {
-      char data = Serial.read();
+  if (Serial.available()) {
+    char data = Serial.read();
 
-      if (data == 'b') {
-        lcd.clear();
-        exitloop = 1;
-      }
+    if (data == 'b') {
+      lcd.clear();
+      exitloop = 1;
     }
+
+  }
 
 }
 
@@ -735,29 +802,25 @@ while (exitloop != 1) {
   digitalWrite(pinA, HIGH);
 
     if (VpinE == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("1");
     }
 
     else if (VpinF == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("2");
     }
 
     else if (VpinG == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("3");
     }
     
     else if (VpinH == LOW) {
-      delay(300);
       lcd.setCursor(0, 0);
-      lcd.print("A");
+      lcd.clear();
     }
-
+    
   digitalWrite(pinB, LOW);
   VpinE = digitalRead(pinE);
   VpinF = digitalRead(pinF);
@@ -765,26 +828,22 @@ while (exitloop != 1) {
   VpinH = digitalRead(pinH);
   digitalWrite(pinB, HIGH);
     if (VpinE == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("4");
     }
     
     else if (VpinF == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("5");
     }
     
     else if (VpinG == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("6");
     }
     
     else if (VpinH == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("B");
     }
   
@@ -796,26 +855,22 @@ while (exitloop != 1) {
   digitalWrite(pinC, HIGH);
     
     if (VpinE == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("7");
     }
     
     else if (VpinF == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("8");
     }
     
     else if (VpinG == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("9");
     }
     
     else if (VpinH == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("C");
     } 
   
@@ -827,26 +882,22 @@ while (exitloop != 1) {
   digitalWrite(pinD, HIGH);
 
     if (VpinE == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("*");
     }
 
     else if (VpinF == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("0");
     }
 
     else if (VpinG == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("#");
     }
 
     else if (VpinH == LOW) {
-      delay(300);
-      lcd.setCursor(0, 0);
+      delay(200);
       lcd.print("D");
     }  
 
@@ -899,16 +950,33 @@ void EPROM() {
           value = value*10 + Serial.read() - 48;}
   
       }
-    }  
+    } 
+
+    case 2:
+      for (int i = 0 ; i < EEPROM.length() ; i++) {
+        EEPROM.write(i, 0);
+        lcd.setCursor(0, 0);
+        lcd.print("Address : ");
+        lcd.print(i);
+      }
+      lcd.clear();
+      lcd.print("EEPROM is clear!");
+      delay(3000);
+      lcd.clear();
+    break; 
+
     EEPROM.write(address, value);
     lcd.clear();
     lcd.print("Value ");
     lcd.print(value);
-    lcd.print(" Was writ");
+    lcd.print(" Was ");
     lcd.setCursor(0, 3);
-    lcd.print("ten to Addr ");
+    lcd.print("   written to ");
+    delay(2000);
+    lcd.clear();
+    lcd.print("  Address ");
     lcd.print(address);
-    delay(4000);
+    delay(2000);
     lcd.clear();
       
   }
