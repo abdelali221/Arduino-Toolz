@@ -297,6 +297,7 @@ void CommandSet() {
               RW = Serial.read() - 48;
               lcd.print(RW);
               delay(500);
+              lcd.clear();
             }
           }
           
@@ -950,20 +951,7 @@ void EPROM() {
           value = value*10 + Serial.read() - 48;}
   
       }
-    } 
-
-    case 2:
-      for (int i = 0 ; i < EEPROM.length() ; i++) {
-        EEPROM.write(i, 0);
-        lcd.setCursor(0, 0);
-        lcd.print("Address : ");
-        lcd.print(i);
-      }
-      lcd.clear();
-      lcd.print("EEPROM is clear!");
-      delay(3000);
-      lcd.clear();
-    break; 
+    }
 
     EEPROM.write(address, value);
     lcd.clear();
@@ -978,6 +966,22 @@ void EPROM() {
     lcd.print(address);
     delay(2000);
     lcd.clear();
+    break;
+    
+    case 2:
+      for (int i = 0 ; i < EEPROM.length() ; i++) {
+        EEPROM.write(i, 0);
+        lcd.setCursor(0, 0);
+        lcd.print("Address : ");
+        lcd.print(i);
+      }
+      lcd.clear();
+      lcd.print("EEPROM is clear!");
+      delay(3000);
+      lcd.clear();
+    break; 
+
+    
       
   }
 
