@@ -27,21 +27,22 @@ int c;
 int Pin;
 int pingPin;
 int pongPin;
-int pinA = 9;
-int pinB = 8;
-int pinC = 7;
-int pinD = 6;
-int pinE = 5;
-int pinF = 4;
-int pinG = 3;
-int pinH = 2;
+const int pinA = 9;
+const int pinB = 8;
+const int pinC = 7;
+const int pinD = 6;
+const int pinE = 5;
+const int pinF = 4;
+const int pinG = 3;
+const int pinH = 2;
 int VpinE;
 int VpinF;
 int VpinG;
 int VpinH;
-byte value;
+int value;
 int address;
 int RW;
+int hby;
 
 byte ball[] = {
   B00100,
@@ -61,7 +62,7 @@ void setup() {
   lcd.clear();
   lcd.print("  Arduino Toolz");
   lcd.setCursor(4, 3);
-  lcd.print("beta 0.7.1");
+  lcd.print("beta 0.9");
   delay(2000);
   lcd.clear();
 }
@@ -105,17 +106,29 @@ void CommandSet() {
     delay(2000);
   }
 
+  else if (data == "LCDinit") {
+    lcd.init();
+  }
+
+  else if (data == "LCDBacklightOn") {
+    lcd.backlight();
+  }
+
+  else if (data == "LCDBacklightOff") {
+    lcd.noBacklight();
+  }
+
   else if (data == "Analog") {
     lcd.print("   Analog PIN");
-    lcd.setCursor(5, 3);
-    lcd.print("reader");
+    lcd.setCursor(6, 3);
+    lcd.print("Tool");
     delay(2000);
     lcd.clear();
     
     
     while (ok != 1) {
       lcd.setCursor(0, 0);
-      lcd.print("Waiting for PIN");
+      lcd.print(" Waiting : PIN");
 
       if (Serial.available()) {
         ok = 1;
@@ -124,18 +137,11 @@ void CommandSet() {
 
     }
 
+    ok = 0;
+
     lcd.clear();
   
-    if (Pin < 0) {
-      lcd.print("   Invalid PIN");
-      lcd.setCursor(4, 3);
-      lcd.print(" number!");
-      delay(1000);
-      lcd.clear();
-      return;
-    }
-
-    if (Pin > 5) {
+    if (Pin < 0 && Pin > 5) {
       lcd.print("   Invalid PIN");
       lcd.setCursor(4, 3);
       lcd.print(" number!");
@@ -148,15 +154,15 @@ void CommandSet() {
   }
 
   else if (data == "Digital") {
-    lcd.print("   Digital PIN");
-    lcd.setCursor(5, 3);
-    lcd.print("reader");
+    lcd.print("  Digital PIN");
+    lcd.setCursor(6, 3);
+    lcd.print("Tool");
     delay(2000);
     lcd.clear();
 
     while (ok != 1) {
       lcd.setCursor(0, 0);
-      lcd.print("Waiting for PIN");
+      lcd.print("  Waiting : PIN");
 
       if (Serial.available()) {
         ok = 1;
@@ -170,25 +176,39 @@ void CommandSet() {
 
     }
 
+    if (Pin < 0 && Pin > 13) {
+      lcd.print("   Invalid PIN");
+      lcd.setCursor(4, 3);
+      lcd.print(" number!");
+      delay(1000);
+      lcd.clear();
+      return;
+    }
+
+    ok = 0;
+
+    while (ok != 1) {
+      lcd.setCursor(0, 0);
+      lcd.print("Read or Write?  ");
+      lcd.setCursor(4, 3);
+      lcd.print("R=0  W=1 ");
+
+      if (Serial.available()) {
+        ok = 1;
+        RW = Serial.read() - 48;
+        lcd.print(RW);
+        delay(500);
+      }
+    } 
+
+    if (RW < 0 && RW > 1) {
+      lcd.print(" Invalid Choice!");
+      delay(1000);
+      lcd.clear();
+      return;
+    }
+
     lcd.clear();
-
-    if (Pin < 0) {
-      lcd.print("   Invalid PIN");
-      lcd.setCursor(4, 3);
-      lcd.print(" number!");
-      delay(1000);
-      lcd.clear();
-      return;
-    }
-
-    if (Pin > 13) {
-      lcd.print("   Invalid PIN");
-      lcd.setCursor(4, 3);
-      lcd.print(" number!");
-      delay(1000);
-      lcd.clear();
-      return;
-    }
 
     digital();
   }
@@ -202,7 +222,7 @@ void CommandSet() {
 
     while (ok != 1) {
       lcd.setCursor(0, 0);
-      lcd.print("Waiting for PIN");
+      lcd.print(" Waiting : PIN");
 
       if (Serial.available()) {
         ok = 1;
@@ -228,22 +248,13 @@ void CommandSet() {
     }
     pongPin = pingPin + 1;  
 
-    if (pingPin < 2) {
+    if (pingPin < 2 && pingPin > 12) {
       lcd.print("   Invalid PIN");
       lcd.setCursor(4, 3);
       lcd.print(" number!");
       delay(1000);
       lcd.clear();
-      loop();
-    }
-
-    if (pingPin > 12) {
-      lcd.print("   Invalid PIN");
-      lcd.setCursor(4, 3);
-      lcd.print(" number!");
-      delay(1000);
-      lcd.clear();
-      loop();
+      return;
     }
 
     ultrasonic();
@@ -271,8 +282,8 @@ void CommandSet() {
 
     while (ok != 1) {
       lcd.setCursor(0, 0);
-      lcd.print("Read or Write?  ");
-      lcd.setCursor(0, 3);
+      lcd.print(" Read or Write?");
+      lcd.setCursor(4, 3);
       lcd.print("R=0  W=1 ");
 
       if (Serial.available()) {
@@ -288,8 +299,8 @@ void CommandSet() {
 
           while (ok != 1) {
             lcd.setCursor(0, 0);
-            lcd.print("Clear or Write?  ");
-            lcd.setCursor(0, 3);
+            lcd.print("Clear or Write?");
+            lcd.setCursor(4, 3);
             lcd.print("C=2  W=1 ");
 
             if (Serial.available()) {
@@ -309,14 +320,43 @@ void CommandSet() {
 
       }
 
+      if (RW < 0 && RW > 1) {
+      lcd.print(" Invalid Choice!");
+      delay(1000);
+      lcd.clear();
+      return;
+      }
+
+    }
+
+    ok = 0;
+    
+    if (RW == 0) {
+
+      while (ok != 1) {
+        lcd.setCursor(0, 0);
+        lcd.print("INT, HEX or BIN?  ");
+        lcd.setCursor(0, 3);
+        lcd.print(" I=0  H=1  B=2 ");
+
+        if (Serial.available()) {
+          ok = 1;
+          hby = Serial.read() - 48;
+          lcd.print(RW);
+          delay(500);
+          lcd.clear();
+        }
+      } 
+
     }  
 
     ok = 0;
 
     if (RW != 2 ) {
+
       while (ok != 1) {
         lcd.setCursor(0, 0);
-        lcd.print("   Waiting for ");
+        lcd.print("   Waiting : ");
         lcd.setCursor(4, 3);
         lcd.print("Address ");
 
@@ -354,73 +394,73 @@ void CommandSet() {
 
 void Clock() {
 
-while (exitloop != 1) {
+  while (exitloop != 1) {
 
-  lcd.setCursor(3, 4);
-  lcd.print("Clock");
-  delay(975);
-  clockcounter();
-  lcd.setCursor(curs, 0);
+    lcd.setCursor(3, 4);
+    lcd.print("Clock");
+    delay(979);
+    clockcounter();
+    lcd.setCursor(curs, 0);
 
-  if (ampmflag == 0) {
-    if (hrs < 10) {
-      lcd.print("0");
-      lcd.print(hrs);
-    }
+    if (ampmflag == 0) {
+      if (hrs < 10) {
+        lcd.print("0");
+        lcd.print(hrs);
+      }
 
-    else {
-      lcd.print(hrs);
-    }
+      else {
+        lcd.print(hrs);
+      }
             
-  }
+    }
               
+    else if (ampmflag == 1) {
+      if (hrs12 < 10) {
+        lcd.print("0");
+        lcd.print(hrs12);
+      }
 
-  else if (ampmflag == 1) {
-    if (hrs12 < 10) {
-      lcd.print("0");
-      lcd.print(hrs12);
+      else {
+        lcd.print(hrs12);
+      } 
+
     }
 
-    else {
-      lcd.print(hrs12);
-    }
-
-  }
-
-  lcd.print(":"); 
+    lcd.print(":"); 
    
-  if (min < 10) {
-    lcd.print("0");
-    lcd.print(min);
-  }
-
-  else {
-    lcd.print(min);
-  }  
-
-  lcd.print(":"); 
-
-  if (sec < 10) {
-    lcd.print("0");
-    lcd.print(sec);
-  }
-
-  else {
-    lcd.print(sec);
-  }
-
-  if (ampmflag == 1) {
-    if (hrs < 12) {
-      lcd.print("  AM");
+    if (min < 10) {
+      lcd.print("0");
+      lcd.print(min);
     }
 
     else {
-      lcd.print("  PM");
-    }
-  }        
+      lcd.print(min);
+    }  
 
-  GetClock();
-}
+    lcd.print(":"); 
+
+    if (sec < 10) {
+      lcd.print("0");
+      lcd.print(sec);
+    }
+
+    else {
+      lcd.print(sec);
+    }
+
+    if (ampmflag == 1) {
+      if (hrs < 12) {
+        lcd.print("  AM");
+      }
+
+      else {
+        lcd.print("  PM");
+      }
+    }        
+
+    GetClock();
+  
+  }
 
 }
 
@@ -468,21 +508,22 @@ void GetClock() {
       exitloop = 1;
     }
 
+    else if (data == 'L') {
+      lcd.noBacklight();
+    }
+
+    else if (data == 'O') {
+      lcd.backlight();
+    }
+
   }
 
-  if (hrs >= 24) {
+  if (hrs >= 24 && hrs < 0) {
     Serial.print("Invalid clock!");
     Serial.print("Format Hhh");
     hrs = 0;
     GetClock();
   } 
-
-  if (hrs < 0) {
-    Serial.print("Invalid clock!");
-    Serial.print("Format Hhh");
-    hrs = 0;
-    GetClock();
-  }
 
   if (hrs12 >= 13) {
     Serial.print("Invalid clock!");
@@ -491,35 +532,22 @@ void GetClock() {
     GetClock();
   }
 
-  else if (min >= 60) {
+  else if (min >= 60 && min < 0) {
     Serial.print("Invalid clock!");
     Serial.print("Format Mmm");
     min = 0;
     GetClock();
   }
 
-  else if (min < 0) {
-    Serial.print("Invalid clock!");
-    Serial.print("Format Mmm");
-    min = 0;
-    GetClock();
-  }
-
-  else if (sec >= 60) {
+  else if (sec >= 60 && sec < 0) {
     Serial.print("Invalid clock!");
     Serial.print("Format Sss");
     sec = 0;
     GetClock();
   }
 
-  else if (sec < 0) {
-    Serial.print("Invalid clock!");
-    Serial.print("Format Sss");
-    sec = 0;
-    GetClock();
-  }
 
-  else if (ampmflag > 1) {
+  else if (ampmflag > 1 && ampmflag < 0) {
     Serial.print("Invalid setting!");
     Serial.print("O = 12h / 1 = 24h");
     Serial.print("Default will be set (24h)");
@@ -603,45 +631,40 @@ void Terminal() {
 
 void analog() {
 
-while (exitloop != 1) {
 
-  lcd.setCursor(0, 0);
-  lcd.print("PIN A");
-  lcd.print(Pin);
-  lcd.print(" : ");
+  while (exitloop != 1) {
+    lcd.setCursor(0, 0);
+    lcd.print("PIN A");
+    lcd.print(Pin);
+    lcd.print(" : ");
 
-  switch (Pin) {
-    case 0:
-      lcd.print(analogRead(A0));
-      delay(50);
-    break;
-    
-    case 1:
-      lcd.print(analogRead(A1));
-      delay(50);
-    break;
-
-    case 2:
-      lcd.print(analogRead(A2));
-      delay(50);
-    break;
-
-    case 3:
-      lcd.print(analogRead(A3));
-      delay(50);
-    break;
-
-    case 4:
-      lcd.print(analogRead(A4));
-      delay(50);
-    break;
-
-    case 5:
-      lcd.print(analogRead(A5));
-      delay(50);
-    break;
-
-  }
+    switch (Pin) {
+      case 0:
+        lcd.print(analogRead(A0));
+        delay(50);
+      break;
+  
+      case 1:
+        lcd.print(analogRead(A1));
+        delay(50);
+      break;
+       case 2:
+        lcd.print(analogRead(A2));
+        delay(50);
+      break;
+       case 3:
+        lcd.print(analogRead(A3));
+        delay(50);
+      break;
+       case 4:
+        lcd.print(analogRead(A4));
+        delay(50);
+      break;
+       case 5:
+        lcd.print(analogRead(A5));
+        delay(50);
+      break;
+    }
 
     if (Serial.available()) {
       char data = Serial.read();
@@ -653,133 +676,174 @@ while (exitloop != 1) {
 
     }
 
-}
+  }
+
 
 }
 
 void digital() {
 
-while (exitloop != 1) {
+  ok = 0;
 
-  lcd.setCursor(0, 0);
-  lcd.print("PIN D");
-  lcd.print(Pin);
-  lcd.print(" : ");
-  pinMode(Pin, INPUT);
-  lcd.print(digitalRead(Pin));
+  switch (RW) {
 
-  if (Serial.available()) {
-    char data = Serial.read();
+  case 0:
 
-    if (data == 'b') {
-      lcd.clear();
-      exitloop = 1;
+    while (exitloop != 1) {
+    
+      lcd.setCursor(0, 0);
+      lcd.print("PIN D");
+      lcd.print(Pin);
+      lcd.print(" : ");
+      pinMode(Pin, INPUT);
+      lcd.print(digitalRead(Pin));
+
+      if (Serial.available()) {
+        char data = Serial.read();
+
+        if (data == 'b') {
+          lcd.clear();
+          exitloop = 1;
+        }
+
+      }
+
+    }
+  break;
+
+  case 1:
+
+    lcd.setCursor(0, 0);
+    lcd.print("    Write");
+    delay(1000);
+    lcd.clear();
+    pinMode(Pin, OUTPUT);
+
+    while (ok != 1) {
+      lcd.setCursor(0, 0);
+      lcd.print("Waiting : State");
+
+      if (Serial.available()) {
+        ok = 1;
+        value = Serial.read() - 48;
+      }    
+
     }
 
-  }
+    switch (value) {
+      case 0:
+        digitalWrite(Pin, LOW);
+      break;
 
-}
+      case 1:
+        digitalWrite(Pin, HIGH);
+      break;
+    }
+
+  break;
+
+  }
 
 }
 
 void IR() {
 
-while (exitloop =! 1) {
+  while (exitloop =! 1) {
 
-  if (IrReceiver.decode()) {
-    lcd.setCursor(0, 0);
-    lcd.println(IrReceiver.decodedIRData.decodedRawData); // Print "old" raw data
-    delay(1000);
-    lcd.clear();
-    IrReceiver.resume(); // Enable receiving of the next value
-  }
-
-  if (Serial.available()) {
-    char data = Serial.read();
-
-    if (data == 'b') {
+    if (IrReceiver.decode()) {
+      lcd.setCursor(0, 0);
+      lcd.println(IrReceiver.decodedIRData.decodedRawData); // Print "old" raw data
+      delay(1000);
       lcd.clear();
-      exitloop = 1;
+      IrReceiver.resume(); // Enable receiving of the next value
+    }
+
+    if (Serial.available()) {
+      char data = Serial.read();
+
+      if (data == 'b') {
+        lcd.clear();
+        exitloop = 1;
+      }
+
     }
 
   }
-
-}
 
 }
 
 void Sensor() {
 
-while (exitloop =! 1) {
+  while (exitloop =! 1) {
 
-  delay(500);
-  DHT.read(DHT11_PIN);
-  lcd.setCursor(0, 0);
-  lcd.print("Temperature : ");
-  lcd.print(DHT.temperature);
-  lcd.setCursor(0, 3);
-  lcd.print("Humidity :");
-  lcd.println(DHT.humidity);
+    delay(500);
+    DHT.read(DHT11_PIN);
+    lcd.setCursor(0, 0);  
+    lcd.print("Temperature : ");
+    lcd.print(DHT.temperature);
+    lcd.setCursor(0, 3);
+    lcd.print("Humidity :");
+    lcd.println(DHT.humidity);
 
-  if (Serial.available()) {
-    char data = Serial.read();
+    if (Serial.available()) {
+      char data = Serial.read();
 
-    if (data == 'b') {
-      lcd.clear();
-      exitloop = 1;
+      if (data == 'b') {
+        lcd.clear();
+        exitloop = 1;
+      }
+
     }
 
   }
-
-}
 
 }
 
 void ultrasonic() {
 
-while (exitloop =! 1) {
+  while (exitloop =! 1) {
 
-  long duration, inches, cm;
+    long duration, inches, cm;
 
-  pinMode(pingPin, OUTPUT);
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(pingPin, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
+    pinMode(pingPin, OUTPUT);
+    digitalWrite(pingPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(pingPin, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(pingPin, LOW);
 
-  pinMode(pongPin, INPUT);
-  duration = pulseIn(pongPin, HIGH);
+    pinMode(pongPin, INPUT);
+    duration = pulseIn(pongPin, HIGH);
 
 
-  inches = microsecondsToInches(duration);
-  cm = microsecondsToCentimeters(duration);
+    inches = microsecondsToInches(duration);
+    cm = microsecondsToCentimeters(duration);
 
-  lcd.setCursor(0, 0);
-  lcd.print(inches);
-  lcd.print("in, ");
-  lcd.print(cm);
-  lcd.print("cm     ");
-  lcd.setCursor(0, 3);
-  lcd.print("PING:D");
-  lcd.print(pingPin);
-  lcd.setCursor(8, 3);
-  lcd.print("PONG:D");
-  lcd.print(pongPin);
+    lcd.setCursor(0, 0);
+    lcd.print(inches);
+    lcd.print("in, ");
+    lcd.print(cm);
+    lcd.print("cm     ");
+    lcd.setCursor(0, 3);
+    lcd.print("PING:D");
+    lcd.print(pingPin);
+    lcd.setCursor(8, 3);
+    lcd.print("PONG:D");
+    lcd.print(pongPin);
 
-  delay(100);
+    delay(100);
 
-  if (Serial.available()) {
-    char data = Serial.read();
+    if (Serial.available()) {
+      char data = Serial.read();
 
-    if (data == 'b') {
-      lcd.clear();
-      exitloop = 1;
+      if (data == 'b') {
+        lcd.clear();
+        exitloop = 1;
+      }
+
     }
 
   }
-
-}
 
 }
 
@@ -793,24 +857,23 @@ long microsecondsToCentimeters(long microseconds) {
 
 void keypad() {
 
-while (exitloop != 1) {
+  while (exitloop != 1) {
 
-  digitalWrite(pinA, LOW);
-  VpinE = digitalRead(pinE);
-  VpinF = digitalRead(pinF);
-  VpinG = digitalRead(pinG);
-  VpinH = digitalRead(pinH);
-  digitalWrite(pinA, HIGH);
+    digitalWrite(pinA, LOW);
+    VpinE = digitalRead(pinE);
+    VpinF = digitalRead(pinF);
+    VpinG = digitalRead(pinG);
+    VpinH = digitalRead(pinH);
+    digitalWrite(pinA, HIGH);
 
     if (VpinE == LOW) {
       delay(200);
       lcd.print("1");
     }
-
     else if (VpinF == LOW) {
       delay(200);
       lcd.print("2");
-    }
+    } 
 
     else if (VpinG == LOW) {
       delay(200);
@@ -822,17 +885,18 @@ while (exitloop != 1) {
       lcd.clear();
     }
     
-  digitalWrite(pinB, LOW);
-  VpinE = digitalRead(pinE);
-  VpinF = digitalRead(pinF);
-  VpinG = digitalRead(pinG);
-  VpinH = digitalRead(pinH);
-  digitalWrite(pinB, HIGH);
+    digitalWrite(pinB, LOW);
+    VpinE = digitalRead(pinE);
+    VpinF = digitalRead(pinF);
+    VpinG = digitalRead(pinG);
+    VpinH = digitalRead(pinH);
+    digitalWrite(pinB, HIGH);
+
     if (VpinE == LOW) {
       delay(200);
       lcd.print("4");
     }
-    
+  
     else if (VpinF == LOW) {
       delay(200);
       lcd.print("5");
@@ -848,12 +912,12 @@ while (exitloop != 1) {
       lcd.print("B");
     }
   
-  digitalWrite(pinC, LOW);
-  VpinE = digitalRead(pinE);
-  VpinF = digitalRead(pinF);
-  VpinG = digitalRead(pinG);
-  VpinH = digitalRead(pinH);  
-  digitalWrite(pinC, HIGH);
+    digitalWrite(pinC, LOW);
+    VpinE = digitalRead(pinE);
+    VpinF = digitalRead(pinF);
+    VpinG = digitalRead(pinG);
+    VpinH = digitalRead(pinH);
+    digitalWrite(pinC, HIGH);
     
     if (VpinE == LOW) {
       delay(200);
@@ -875,12 +939,12 @@ while (exitloop != 1) {
       lcd.print("C");
     } 
   
-  digitalWrite(pinD, LOW);
-  VpinE = digitalRead(pinE);
-  VpinF = digitalRead(pinF);
-  VpinG = digitalRead(pinG);
-  VpinH = digitalRead(pinH);
-  digitalWrite(pinD, HIGH);
+    digitalWrite(pinD, LOW);
+    VpinE = digitalRead(pinE);
+    VpinF = digitalRead(pinF);
+    VpinG = digitalRead(pinG);
+    VpinH = digitalRead(pinH);
+    digitalWrite(pinD, HIGH);
 
     if (VpinE == LOW) {
       delay(200);
@@ -902,41 +966,60 @@ while (exitloop != 1) {
       lcd.print("D");
     }  
 
-  if (Serial.available()) {
-    char data = Serial.read();
+    if (Serial.available()) {
+      char data = Serial.read();
 
-    if (data == 'b') {
-      lcd.clear();
-      exitloop = 1;
+      if (data == 'b') {
+        lcd.clear();
+        exitloop = 1;
+      }
+
     }
-  }
 
-}
+  }
 
 }
 
 void EPROM() {
 
+  ok = 0;
   lcd.clear();
 
   switch (RW) {
     case 0:
-    value = EEPROM.read(address);
+
+    value = EEPROM.read(address);    
     lcd.print("  The value of ");
     lcd.setCursor(0, 3);
     lcd.print("Addr ");
     lcd.print(address);
     lcd.print(" is ");
-    lcd.print(value);
+    switch (hby) {
+      case 0:
+      lcd.print(value);
+      break;
+
+      case 1:
+      lcd.print(value, HEX);
+      break;
+
+      case 2:
+      delay(2000);
+      lcd.clear();
+      lcd.setCursor(3, 0);
+      lcd.print(value, BIN);
+      break;
+
+    }
     delay(2000);
     lcd.clear();
     break;
 
     case 1:
-    ok = 0;
+    
     while (ok != 1) {
       lcd.setCursor(0, 0);
-      lcd.print("   Waiting for ");
+      lcd.print("   Waiting : ");
       lcd.setCursor(6, 3);
       lcd.print("value");
 
@@ -951,6 +1034,7 @@ void EPROM() {
           value = value*10 + Serial.read() - 48;}
   
       }
+      
     }
 
     EEPROM.write(address, value);
@@ -960,11 +1044,11 @@ void EPROM() {
     lcd.print(" Was ");
     lcd.setCursor(0, 3);
     lcd.print("   written to ");
-    delay(1000);
+    delay(2000);
     lcd.clear();
     lcd.print("  Address ");
     lcd.print(address);
-    delay(2000);
+    delay(1000);
     lcd.clear();
     break;
 
@@ -979,10 +1063,8 @@ void EPROM() {
       lcd.print("EEPROM is clear!");
       delay(3000);
       lcd.clear();
-    break; 
+    break;
 
-    
-      
   }
 
 }
