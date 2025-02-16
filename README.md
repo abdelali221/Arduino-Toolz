@@ -8,6 +8,7 @@
  - Analog/Digital PIN Tools (Beta)
  - Module Testers (IR/UltraSonic/DHT11/Keypad)
  - EEPROM Tool
+ - Hot-Plug a LCD Display (BETA)
 
  # How to Use :
 
