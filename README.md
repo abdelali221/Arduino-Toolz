@@ -3,11 +3,11 @@
 
 # Features :
 
- -Clock
- -Terminal (Beta)
- -Analog/Digital PIN Tools (Beta)
- -Module Testers (IR/UltraSonic/DHT11/Keypad)
- -EEPROM Tool
+ - Clock
+ - Terminal (Beta)
+ - Analog/Digital PIN Tools (Beta)
+ - Module Testers (IR/UltraSonic/DHT11/Keypad)
+ - EEPROM Tool
 
  # How to Use :
 
