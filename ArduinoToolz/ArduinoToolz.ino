@@ -6,7 +6,7 @@
 DFRobot_DHT11 DHT;
 #define DHT11_PIN 4
 
-LiquidCrystal_I2C lcd(0x27,  16, 2);
+LiquidCrystal_I2C lcd(39,  16, 2); // 39 = 0x27
 
 // Time Variables :
 int sec = 0;
@@ -15,9 +15,9 @@ int hrs = 0;
 int hrs12 = 12;
 
 // Serial buffer :
-int data = 0;
-
-// Flags :
+String data;
+int chr;
+int StrCharN;
 int irpin;
 int exitloop;
 int ok = 0;
@@ -62,7 +62,7 @@ void setup() {
   lcd.clear();
   lcd.print("  Arduino Toolz");
   lcd.setCursor(4, 3);
-  lcd.print("beta 0.9");
+  lcd.print("beta 0.9.1");
   delay(2000);
   lcd.clear();
 }
@@ -80,12 +80,15 @@ void loop() {
   lcd.print("  Waiting for a");
   lcd.setCursor(5, 3);
   lcd.print("command");
+  
 }
 
 void CommandSet() {
 
-  String data = Serial.readString();
-  data.trim();
+  StringRead();
+  Serial.print(data);
+  Serial.write(13);
+  Serial.write(10);
 
   if (data == "Terminal") {
     lcd.clear();
@@ -93,7 +96,12 @@ void CommandSet() {
     delay(1000);
     lcd.clear();
     Terminal();
-  }  
+  }
+
+  if (data == "Clear") {
+    Serial.write(27);
+    Serial.print("[2J");
+  } 
 
   else if (data == "Clock") {
     lcd.clear();
@@ -107,7 +115,18 @@ void CommandSet() {
   }
 
   else if (data == "LCDinit") {
+    LiquidCrystal_I2C lcd(39,  16, 2);
     lcd.init();
+    lcd.noBacklight();
+    delay(500);
+    lcd.backlight();
+
+    for (c = 0; c < 10; c++) {
+      delay(150);
+      lcd.print("TESTING DISPLAY");
+    }
+
+    lcd.clear();
   }
 
   else if (data == "LCDBacklightOn") {
@@ -390,6 +409,8 @@ void CommandSet() {
   EPROM();
   }
 
+  String data = "";
+
 }
 
 void Clock() {
@@ -456,7 +477,8 @@ void Clock() {
       else {
         lcd.print("  PM");
       }
-    }        
+    
+    }
 
     GetClock();
   
@@ -518,10 +540,11 @@ void GetClock() {
 
   }
 
-  if (hrs >= 24 && hrs < 0) {
+  if (hrs >= 24 || hrs < 0) {
     Serial.print("Invalid clock!");
     Serial.print("Format Hhh");
     hrs = 0;
+    hrs12 = 12;
     GetClock();
   } 
 
@@ -532,29 +555,27 @@ void GetClock() {
     GetClock();
   }
 
-  else if (min >= 60 && min < 0) {
+  if (min >= 60 || min < 0) {
     Serial.print("Invalid clock!");
     Serial.print("Format Mmm");
     min = 0;
     GetClock();
   }
 
-  else if (sec >= 60 && sec < 0) {
+  if (sec >= 60 || sec < 0) {
     Serial.print("Invalid clock!");
     Serial.print("Format Sss");
     sec = 0;
     GetClock();
   }
 
-
-  else if (ampmflag > 1 && ampmflag < 0) {
+  if (ampmflag > 1 || ampmflag < 0) {
     Serial.print("Invalid setting!");
     Serial.print("O = 12h / 1 = 24h");
     Serial.print("Default will be set (24h)");
     ampmflag = 0;
     GetClock();
   }
-
 
 }
 
@@ -602,26 +623,37 @@ void Terminal() {
 
   if (Serial.available()) {
 
-    data = 0;
-
     if (Serial.available() > 0) {
+
+      c = c + 1;
+
+      if (c == 16) {
+        lcd.setCursor(0, 3);
+      }
+ 
+      if (c == 32) {
+        c = 0;
+        delay(50);
+        lcd.clear();
+        lcd.setCursor(0, 0);
+      }
+
       char data = Serial.read();
-      lcd.write(data);
+      
+      if (data != '\r' && data != '\n') {
+        lcd.write(data);
+      }
+
+      else {
+        c = 0;
+        delay(800);
+        lcd.clear();
+      }
+
       Serial.write(data);
       delay(10);
-      c = c + 1;
-    }
+      }
 
-    if (c == 16) {
-      lcd.setCursor(0, 3);
-    }
- 
-    if (c == 32) {
-      c = 0;
-      delay(50);
-      lcd.clear();
-      lcd.setCursor(0, 0);
-    }
 
   }
 
@@ -1065,6 +1097,30 @@ void EPROM() {
       lcd.clear();
     break;
 
+  }
+
+}
+
+void StringRead() {
+
+  while (exitloop != 1) {
+
+    if (Serial.available()) {
+
+      while (Serial.available() > 0) {
+        char chr = Serial.read();
+        Serial.print(chr);
+                
+        if (chr == '\n' || chr == '\r') {
+          exitloop = 1;
+        }
+
+        else {
+          data.concat(chr);
+        }
+    
+      }
+    }    
   }
 
 }
