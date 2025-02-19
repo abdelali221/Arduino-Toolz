@@ -8,13 +8,10 @@ DFRobot_DHT11 DHT;
 
 LiquidCrystal_I2C lcd(39,  16, 2); // 39 = 0x27
 
-// Time Variables :
 int sec = 0;
 int min = 0;
 int hrs = 0;
 int hrs12 = 12;
-
-// Serial buffer :
 String data;
 int chr;
 int irpin;
@@ -61,7 +58,7 @@ void setup() {
   lcd.clear();
   lcd.print("  Arduino Toolz");
   lcd.setCursor(4, 3);
-  lcd.print("beta 0.9.1");
+  lcd.print("beta 0.9.3");
   delay(2000);
   lcd.clear();
 }
@@ -104,7 +101,7 @@ void CommandSet() {
     Terminal();
   }
 
-  if (data == "Clear") {
+  if (data == "Cls") {
     Serial.write(27);
     Serial.print("[2J");
   } 
@@ -135,11 +132,11 @@ void CommandSet() {
     lcd.clear();
   }
 
-  else if (data == "LCDBacklightOn") {
+  else if (data == "LCDLOn") {
     lcd.backlight();
   }
 
-  else if (data == "LCDBacklightOff") {
+  else if (data == "LCDLOff") {
     lcd.noBacklight();
   }
 
