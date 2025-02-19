@@ -17,7 +17,6 @@ int hrs12 = 12;
 // Serial buffer :
 String data;
 int chr;
-int StrCharN;
 int irpin;
 int exitloop;
 int ok = 0;
@@ -70,8 +69,14 @@ void setup() {
 void loop() {
 
   if (Serial.available()) {
+    c = 0;
     ok = 0;
     exitloop = 0;
+    address = 0;
+    value = 0;
+    Pin = 0;
+    pingPin = 0;
+    irpin = 0;
     lcd.clear();
     CommandSet();
   }
@@ -85,8 +90,9 @@ void loop() {
 
 void CommandSet() {
 
+  data = "";
   StringRead();
-  Serial.print(data);
+  exitloop = 0;
   Serial.write(13);
   Serial.write(10);
 
@@ -150,9 +156,26 @@ void CommandSet() {
       lcd.print(" Waiting : PIN");
 
       if (Serial.available()) {
-        ok = 1;
-        Pin = Serial.read() - 48;
-      }
+
+        char chr = Serial.read();
+        Serial.print(chr);
+        
+        if (chr == '\n'  || chr == '\r') {
+          ok = 1;
+        }
+
+        else {
+          
+          if (c != 0 && chr != '0') {
+            c = c + 1;
+          }
+
+          if (c < 2) {
+            value = value*10 + chr - 48;
+          }
+
+        }
+      }  
 
     }
 
@@ -181,19 +204,32 @@ void CommandSet() {
 
     while (ok != 1) {
       lcd.setCursor(0, 0);
-      lcd.print("  Waiting : PIN");
+      lcd.print(" Waiting : PIN");
 
       if (Serial.available()) {
-        ok = 1;
-        Pin = Serial.read() - 48;
 
-        if (Serial.available()) {
-          Pin = Pin*10 + Serial.read() - 48;
+        char chr = Serial.read();
+        Serial.print(chr);
+        
+        if (chr == '\n' || chr == '\r') {
+          ok = 1;
         }
 
-      }
+        else {
+          
+          if (c != 0 && chr != '0') {
+            c = c + 1;
+          }
+
+          if (c < 3) {
+            Pin = Pin*10 + chr - 48;
+          }
+
+        }
+      }  
 
     }
+
 
     if (Pin < 0 && Pin > 13) {
       lcd.print("   Invalid PIN");
@@ -244,12 +280,30 @@ void CommandSet() {
       lcd.print(" Waiting : PIN");
 
       if (Serial.available()) {
-        ok = 1;
-        irpin = Serial.read() - 48;
+
+        char chr = Serial.read();
+        Serial.print(chr);
+        
+        if (chr == '\n' || chr == '\r') {
+          ok = 1;
+        }
+
+        else {
+          
+          if (c != 0 && chr != '0') {
+            c = c + 1;
+          }
+
+          if (c < 3) {
+            irpin = irpin*10 + chr - 48;
+          }
+
+        }
+
       }
 
     }
-
+    
     lcd.clear();
     IrReceiver.begin(irpin, ENABLE_LED_FEEDBACK);
     IR();
@@ -260,14 +314,39 @@ void CommandSet() {
   }
 
   else if (data == "UltraR") {
-    pingPin = Serial.read() - 48;
 
-    if (Serial.available()) {
-      pingPin = pingPin*10 + Serial.read() - 48;
+    while (ok != 1) {
+      lcd.setCursor(0, 0);
+      lcd.print("Waiting : PingPIN");
+
+      if (Serial.available()) {
+
+        char chr = Serial.read();
+        Serial.print(chr);
+        
+        if (chr == '\n' || chr == '\r') {
+          ok = 1;
+        }
+
+        else {
+          
+          if (c != 0 && chr != '0') {
+            c = c + 1;
+          }
+
+          if (c < 3) {
+            pingPin = pingPin*10 + chr - 48;
+            pongPin = pingPin + 1;
+          }
+
+        }
+
+      }
+
     }
-    pongPin = pingPin + 1;  
 
-    if (pingPin < 2 && pingPin > 12) {
+
+    if (pingPin < 2 || pingPin > 12) {
       lcd.print("   Invalid PIN");
       lcd.setCursor(4, 3);
       lcd.print(" number!");
@@ -371,30 +450,34 @@ void CommandSet() {
 
     ok = 0;
 
-    if (RW != 2 ) {
+    if (RW != 2) {
 
       while (ok != 1) {
         lcd.setCursor(0, 0);
-        lcd.print("   Waiting : ");
-        lcd.setCursor(4, 3);
-        lcd.print("Address ");
+        lcd.print(" Waiting : Addr");
 
         if (Serial.available()) {
-          ok = 1;
-          address = Serial.read() - 48;
 
-          if (Serial.available()) {
-            address = address*10 + Serial.read() - 48;}
+        char chr = Serial.read();
+                  
+          if (chr == '\n' || chr == '\r') {
+            ok = 1;
+          }
 
-            if (Serial.available()) {
-              address = address*10 + Serial.read() - 48;}
+          else {
 
-              if (Serial.available()) {
-                address = address*10 + Serial.read() - 48;}            
-          
-          lcd.print(address);
-          delay(500);
-        }
+            if (c != 0 && chr != 48) {
+              Serial.print(chr);
+              c = c + 1;
+            }
+
+            if (c < 5 ) {
+              address = address*10 + chr - 48;
+            }
+
+          }
+        }  
+
       }
      
     }
@@ -409,8 +492,11 @@ void CommandSet() {
   EPROM();
   }
 
-  String data = "";
+  else {
+    data = "";
+  }
 
+  
 }
 
 void Clock() {
@@ -1054,19 +1140,28 @@ void EPROM() {
       lcd.print("   Waiting : ");
       lcd.setCursor(6, 3);
       lcd.print("value");
-
-      if (Serial.available()) {
-        ok = 1;
-        value = Serial.read() - 48;
-
-        if (Serial.available()) {
-          value = value*10 + Serial.read() - 48;}
-
-        if (Serial.available()) {
-          value = value*10 + Serial.read() - 48;}
-  
-      }
       
+      if (Serial.available()) {
+
+        char chr = Serial.read();
+        Serial.print(chr);
+        
+        if (chr == '\n' || chr == '\r') {
+          ok = 1;
+        }
+
+        else {
+
+          if (c != 0 && chr != '0') {
+            c = c + 1;
+          }
+
+          if (c < 4) {
+            value = value*10 + chr - 48;
+          }
+        }
+      }  
+
     }
 
     EEPROM.write(address, value);
