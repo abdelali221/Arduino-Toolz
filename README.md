@@ -6,9 +6,9 @@
  - Clock
  - Terminal
  - Analog/Digital PIN Tools (Beta)
- - Module Testers (IR/UltraSonic/DHT11/Keypad)
- - EEPROM Tool
- - Hot-Plug a LCD Display (BETA)
+ - Module Testers (IR/UltraSonic/DHT11/Keypad) (Beta)
+ - EEPROM Tool (Beta)
+ - Hot-Plug a LCD Display (Beta)
 
  # How to Use :
 
