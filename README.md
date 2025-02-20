@@ -31,9 +31,11 @@ After uploading the project you should get "Waiting for a command" on the LCD. T
  - UltraR (For the UltraSonic Sensor)
  - Keypad
  - LCDinit (To hot-plug an LCD screen)
- - LCDBacklightOn
- - LCDBacklightOff
+ - LCDLOn
+ - LCDLOff
  - EEPROM
+ - Rave (pattern for LCD TEST)
+ - Help
  
 # Changelog :
 
