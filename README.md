@@ -37,7 +37,10 @@ After uploading the project you should get "Waiting for a command" on the LCD. T
  
 # Changelog :
 
- - 0.9 (fixed bugs/added features)
- - 0.9.1 (the command system was remade, now it's more intuitive)
- - 0.9.2 (fixed bugs/changed serialread stuff)
+ - b 0.9 (fixed bugs/added features)
+ - b 0.9.1 (the command system was remade, now it's more intuitive)
+ - b 0.9.2 (fixed bugs/changed serialread stuff)
+ - b 0.9.3 (major serial command system update)
+ - b 0.9.4 (bug fixes/updated serial system)
+ - 1.0 (FIRST RELEASE! ADDED CONTENT/FIXED BUGS/OPTIMIZATION)
  

@@ -42,13 +42,14 @@ int hby;
 int muv;
 
 byte ball[] = {
-  B00100,
-  B00100,
-  B00100,
-  B00100,
-  B11011,
-  B11011,
-  B00000
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
 };
 
 void setup() {
@@ -60,10 +61,11 @@ void setup() {
   lcd.createChar(0, ball);
   lcd.clear();
   lcd.print("  Arduino Toolz");
-  lcd.setCursor(4, 3);
-  lcd.print("beta 0.9.4");
+  lcd.setCursor(1, 3);
+  lcd.print("Release 1.0!");
   delay(2000);
   lcd.clear();
+  Serial.print("$>");
 }
 
 void loop() {
@@ -80,6 +82,7 @@ void loop() {
     muv = 0;
     lcd.clear();
     CommandSet();
+    Serial.print("$>");
   }
 
   lcd.setCursor(0, 0);
@@ -95,6 +98,57 @@ void CommandSet() {
   exitloop = 0;
   Serial.write(13);
   Serial.write(10);
+  
+  if (data == "Help") {
+    Serial.print("// Command List :");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Analog");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Clock");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Cls (Clear the Screen)");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Customchar");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Die");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Digital");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("EEPROM");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("IR");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Keypad");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("LCDinit (To hot-plug an LCD screen)");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("LCDLOff");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("LCDLOn");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Sensor (For DHT11)");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("Terminal");
+    Serial.write(13);
+    Serial.write(10);
+    Serial.print("UltraR (For the UltraSonic Sensor)");
+    Serial.write(13);
+    Serial.write(10);
+  }
 
   if (data == "Terminal") {
     lcd.clear();
@@ -104,7 +158,97 @@ void CommandSet() {
     Terminal();
   }
 
-  if (data == "Cls") {
+  else if (data == "Die" || data == "kys" || data == "Fuck you") {
+    Serial.print("No.");
+    Serial.write(13);
+    Serial.write(10);
+  }
+
+  else if (data == "Rave") {
+    while (exitloop != 1) {
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.setCursor(0, 3);
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      delay(300);
+      lcd.clear();
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.setCursor(0, 3);
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      lcd.write(byte(0));
+      lcd.print(" ");
+      delay(300);
+      lcd.clear();
+      if (Serial.available()) {
+        char data = Serial.read();
+
+        if (data == 'b') {
+          lcd.clear();
+          exitloop = 1;
+        }
+      }
+    }
+
+  }
+
+  else if (data == "Cls") {
     Serial.write(27);
     Serial.print("[2J");
   }
@@ -181,7 +325,7 @@ void CommandSet() {
 
     lcd.clear();
 
-    if (Pin < 0 && Pin > 5) {
+    if (Pin < 0 || Pin > 5) {
       lcd.print("   Invalid PIN");
       lcd.setCursor(4, 3);
       lcd.print(" number!");
@@ -227,7 +371,7 @@ void CommandSet() {
     }
 
 
-    if (Pin < 0 && Pin > 13) {
+    if (Pin < 0 || Pin > 13) {
       lcd.print("   Invalid PIN");
       lcd.setCursor(4, 3);
       lcd.print(" number!");
@@ -252,7 +396,7 @@ void CommandSet() {
       }
     }
 
-    if (RW < 0 && RW > 1) {
+    if (RW < 0 || RW > 1) {
       lcd.print(" Invalid Choice!");
       delay(1000);
       lcd.clear();
@@ -407,7 +551,7 @@ void CommandSet() {
         }
       }
 
-      if (RW < 0 && RW > 1) {
+      if (RW < 0 || RW > 1) {
         lcd.print(" Invalid Choice!");
         delay(1000);
         lcd.clear();
@@ -1205,6 +1349,7 @@ void StringRead() {
 
           if (muv < 16) {
             lcd.clear();
+            lcd.print("$>");
             lcd.print(data);  
           }
         }
