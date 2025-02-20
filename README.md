@@ -4,7 +4,7 @@
 # Features :
 
  - Clock
- - Terminal (Beta)
+ - Terminal
  - Analog/Digital PIN Tools (Beta)
  - Module Testers (IR/UltraSonic/DHT11/Keypad)
  - EEPROM Tool
