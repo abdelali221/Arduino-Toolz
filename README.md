@@ -23,18 +23,16 @@ After uploading the project you should get "Waiting for a command" on the LCD. T
 # The commands : 
 
  - Terminal
- - Clock
+ - Clock (Not implemented yet)
  - Analog
  - Digital
- - IR
- - Sensor (For DHT11)
- - UltraR (For the UltraSonic Sensor)
- - Keypad
- - LCDinit (To hot-plug an LCD screen)
- - LCDLOn
- - LCDLOff
+ - IR (Not implemented yet)
+ - Sensor (For DHT11) (Not implemented yet)
+ - UltraR (For the UltraSonic Sensor) (Not implemented yet)
+ - Keypad (Not implemented yet)
+ - LCD (LCD tools)
  - EEPROM
- - Rave (pattern for LCD TEST)
+ - Rave (pattern for LCD TEST) (Not implemented yet)
  - Help
  
 # Changelog :
@@ -45,4 +43,8 @@ After uploading the project you should get "Waiting for a command" on the LCD. T
  - b 0.9.3 (major serial command system update)
  - b 0.9.4 (bug fixes/updated serial system)
  - 1.0 (FIRST RELEASE! ADDED CONTENT/FIXED BUGS/OPTIMIZATION)
+ - 2.0 (MAJOR UPDATE : ENTIRELY REWRITTEN/MASSIVE IMPROVEMENTS)
  
+# Notes :
+
+	DON'T USE THE Arduino-Toolz AS IT'S DEPRECATED NOW
