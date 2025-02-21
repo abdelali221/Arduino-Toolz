@@ -15,7 +15,7 @@
 Just upload the Project to your Arduino after downloading the required Libraries, then you'll be done!
 
  -#REQUIREMENTS :
- - An Arduino (The program was tested with an Arduino UNO)
+ - An Arduino (This program was tested with an Arduino UNO)
  - A I2C LCD display (Needed)
 
 After uploading the project you should get "Waiting for a command" on the LCD. The program is controllable via Serial with commands.
@@ -27,12 +27,12 @@ After uploading the project you should get "Waiting for a command" on the LCD. T
  - Analog
  - Digital
  - IR (Not implemented yet)
- - Sensor (For DHT11) (Not implemented yet)
+ - Sensor (For DHT11) 
  - UltraR (For the UltraSonic Sensor) (Not implemented yet)
  - Keypad (Not implemented yet)
  - LCD (LCD tools)
  - EEPROM
- - Rave (pattern for LCD TEST) (Not implemented yet)
+ - Rave (pattern for LCD TEST)
  - Help
  
 # Changelog :
