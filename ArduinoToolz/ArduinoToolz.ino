@@ -6,7 +6,7 @@
 DFRobot_DHT11 DHT;
 #define DHT11_PIN 4
 
-LiquidCrystal_I2C lcd(39, 16, 2);  // 39 = 0x27
+LiquidCrystal_I2C lcd(39, 16, 4);  // 39 = 0x27
 
 int sec = 0;
 int min = 0;
@@ -15,7 +15,7 @@ int hrs12 = 12;
 String data;
 int chr;
 int irpin;
-int exitloop;
+bool exitloop;
 int ok = 0;
 int ampmflag = 0;
 int curs = 4;
@@ -61,7 +61,7 @@ void setup() {
   lcd.createChar(0, ball);
   lcd.clear();
   lcd.print("  Arduino Toolz");
-  lcd.setCursor(1, 3);
+  lcd.setCursor(3, 1);
   lcd.print("Release 1.0!");
   delay(2000);
   lcd.clear();
@@ -87,7 +87,7 @@ void loop() {
 
   lcd.setCursor(0, 0);
   lcd.print("  Waiting for a");
-  lcd.setCursor(5, 3);
+  lcd.setCursor(5, 1);
   lcd.print("command");
 }
 
@@ -100,54 +100,7 @@ void CommandSet() {
   Serial.write(10);
   
   if (data == "Help") {
-    Serial.print("// Command List :");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Analog");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Clock");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Cls (Clear the Screen)");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Customchar");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Die");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Digital");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("EEPROM");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("IR");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Keypad");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("LCDinit (To hot-plug an LCD screen)");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("LCDLOff");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("LCDLOn");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Sensor (For DHT11)");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("Terminal");
-    Serial.write(13);
-    Serial.write(10);
-    Serial.print("UltraR (For the UltraSonic Sensor)");
-    Serial.write(13);
-    Serial.write(10);
+    commandhelp();
   }
 
   if (data == "Terminal") {
@@ -182,7 +135,7 @@ void CommandSet() {
       lcd.print(" ");
       lcd.write(byte(0));
       lcd.print(" ");
-      lcd.setCursor(0, 3);
+      lcd.setCursor(0, 1);
       lcd.print(" ");
       lcd.write(byte(0));
       lcd.print(" ");
@@ -217,7 +170,7 @@ void CommandSet() {
       lcd.write(byte(0));
       lcd.print(" ");
       lcd.write(byte(0));
-      lcd.setCursor(0, 3);
+      lcd.setCursor(0, 1);
       lcd.write(byte(0));
       lcd.print(" ");
       lcd.write(byte(0));
@@ -289,7 +242,7 @@ void CommandSet() {
 
   else if (data == "Analog") {
     lcd.print("   Analog PIN");
-    lcd.setCursor(6, 3);
+    lcd.setCursor(6, 1);
     lcd.print("Tool");
     delay(2000);
     lcd.clear();
@@ -327,7 +280,7 @@ void CommandSet() {
 
     if (Pin < 0 || Pin > 5) {
       lcd.print("   Invalid PIN");
-      lcd.setCursor(4, 3);
+      lcd.setCursor(4, 1);
       lcd.print(" number!");
       delay(1000);
       lcd.clear();
@@ -339,7 +292,7 @@ void CommandSet() {
 
   else if (data == "Digital") {
     lcd.print("  Digital PIN");
-    lcd.setCursor(6, 3);
+    lcd.setCursor(6, 1);
     lcd.print("Tool");
     delay(2000);
     lcd.clear();
@@ -373,7 +326,7 @@ void CommandSet() {
 
     if (Pin < 0 || Pin > 13) {
       lcd.print("   Invalid PIN");
-      lcd.setCursor(4, 3);
+      lcd.setCursor(4, 1);
       lcd.print(" number!");
       delay(1000);
       lcd.clear();
@@ -385,7 +338,7 @@ void CommandSet() {
     while (ok != 1) {
       lcd.setCursor(0, 0);
       lcd.print("Read or Write?  ");
-      lcd.setCursor(4, 3);
+      lcd.setCursor(4, 1);
       lcd.print("R=0  W=1 ");
 
       if (Serial.available()) {
@@ -454,7 +407,9 @@ void CommandSet() {
 
     while (ok != 1) {
       lcd.setCursor(0, 0);
-      lcd.print("Waiting : PingPIN");
+      lcd.print(" Waiting : ");
+      lcd.setCursor(2, 1);
+      lcd.print("PingPIN");
 
       if (Serial.available()) {
 
@@ -479,10 +434,11 @@ void CommandSet() {
       }
     }
 
+    lcd.clear();
 
     if (pingPin < 2 || pingPin > 12) {
       lcd.print("   Invalid PIN");
-      lcd.setCursor(4, 3);
+      lcd.setCursor(4, 1);
       lcd.print(" number!");
       delay(1000);
       lcd.clear();
@@ -515,7 +471,7 @@ void CommandSet() {
     while (ok != 1) {
       lcd.setCursor(0, 0);
       lcd.print(" Read or Write?");
-      lcd.setCursor(4, 3);
+      lcd.setCursor(4, 1);
       lcd.print("R=0  W=1 ");
 
       if (Serial.available()) {
@@ -532,7 +488,7 @@ void CommandSet() {
           while (ok != 1) {
             lcd.setCursor(0, 0);
             lcd.print("Clear or Write?");
-            lcd.setCursor(4, 3);
+            lcd.setCursor(4, 1);
             lcd.print("C=2  W=1 ");
 
             if (Serial.available()) {
@@ -566,7 +522,7 @@ void CommandSet() {
       while (ok != 1) {
         lcd.setCursor(0, 0);
         lcd.print("INT, HEX or BIN?  ");
-        lcd.setCursor(0, 3);
+        lcd.setCursor(0, 1);
         lcd.print(" I=0  H=1  B=2 ");
 
         if (Serial.available()) {
@@ -590,8 +546,11 @@ void CommandSet() {
         if (Serial.available()) {
 
           char chr = Serial.read();
+          Serial.print(chr);
 
           if (chr == '\n' || chr == '\r') {
+            Serial.write(13);
+            Serial.write(10);
             ok = 1;
           }
 
@@ -629,7 +588,7 @@ void Clock() {
 
   while (exitloop != 1) {
 
-    lcd.setCursor(3, 4);
+    lcd.setCursor(3, 1);
     lcd.print("Clock");
     delay(979);
     clockcounter();
@@ -697,14 +656,28 @@ void Clock() {
 
 void GetClock() {
 
+  ok = 0;
+
   if (Serial.available()) {
     char data = Serial.read();
+    Serial.print(data);
 
     if (data == 'H') {
-      hrs = 0;
-      hrs = Serial.read() - 48;
-      hrs = hrs * 10 + (Serial.read() - 48);
+      while (ok != 1) {
+        if (Serial.available()) {
+          char chr = Serial.read();
+          Serial.print(chr);
+        
+          if (chr == '\n' || chr == '\r') {
+            ok = 1;
+          }
 
+          else {
+          hrs = hrs * 10 + (chr - 48);
+          }
+        }
+      }
+    
       if (hrs >= 13) {
         hrs12 = hrs - 12;
       }
@@ -716,25 +689,58 @@ void GetClock() {
     }
 
     else if (data == 'M') {
-      min = 0;
-      min = Serial.read() - 48;
-      min = min * 10 + (Serial.read() - 48);
-    }
+      while (ok != 1) {
+        if (Serial.available()) {
+          char chr = Serial.read();
+          Serial.print(chr);
+        
+          if (chr == '\n' || chr == '\r') {
+            ok = 1;
+          }
+
+          else {
+          min = min * 10 + (chr - 48);
+          }
+        }
+      }
+    }    
 
     else if (data == 'S') {
-      sec = 0;
-      sec = Serial.read() - 48;
-      sec = sec * 10 + (Serial.read() - 48);
+      while (ok != 1) {
+        if (Serial.available()) {
+          char chr = Serial.read();
+        
+          if (chr == '\n' || chr == '\r') {
+            ok = 1;
+          }
+
+          else {
+          sec = sec * 10 + (chr - 48);
+          }
+        }
+      }
     }
 
     else if (data == 'T') {
-      ampmflag = 0;
-      ampmflag = Serial.read() - 48;
-      lcd.clear();
+      while (ok != 1) {
+        if (Serial.available()) {
+          char chr = Serial.read();
+        
+          if (chr == '\n' || chr == '\r') {
+            ok = 1;
+          }
+
+          else {
+          ampmflag = chr - 48;
+          }
+        }
+      }
     }
 
     else if (data == 'b') {
       lcd.clear();
+      Serial.write(27);
+      Serial.print("[2J");
       exitloop = 1;
     }
 
@@ -749,7 +755,9 @@ void GetClock() {
 
   if (hrs >= 24 || hrs < 0) {
     Serial.print("Invalid clock!");
-    Serial.print("Format Hhh");
+    Serial.print(" Format Hhh");
+    Serial.write(13);
+    Serial.write(10);
     hrs = 0;
     hrs12 = 12;
     GetClock();
@@ -757,28 +765,38 @@ void GetClock() {
 
   if (hrs12 >= 13) {
     Serial.print("Invalid clock!");
-    Serial.print("Format Hhh");
+    Serial.print(" Format Hhh");
+    Serial.write(13);
+    Serial.write(10);
     hrs12 = 12;
     GetClock();
   }
 
   if (min >= 60 || min < 0) {
     Serial.print("Invalid clock!");
-    Serial.print("Format Mmm");
+    Serial.print(" Format Mmm");
+    Serial.write(13);
+    Serial.write(10);
     min = 0;
     GetClock();
   }
 
   if (sec >= 60 || sec < 0) {
     Serial.print("Invalid clock!");
-    Serial.print("Format Sss");
+    Serial.print(" Format Sss");
+    Serial.write(13);
+    Serial.write(10);
     sec = 0;
     GetClock();
   }
 
   if (ampmflag > 1 || ampmflag < 0) {
     Serial.print("Invalid setting!");
+    Serial.write(13);
+    Serial.write(10);
     Serial.print("O = 12h / 1 = 24h");
+    Serial.write(13);
+    Serial.write(10);
     Serial.print("Default will be set (24h)");
     ampmflag = 0;
     GetClock();
@@ -834,7 +852,7 @@ void Terminal() {
 
       if (data != '\r' && data != '\n') {
 
-        if (data == '\b') {
+        if (data == '\b' || data == 127) {
 
           Serial.print("\b\e[K");
 
@@ -842,16 +860,16 @@ void Terminal() {
             c = c - 1;
           }
 
-          if (c < 17) {
+          if (c < 16) {
             lcd.setCursor(c, 0);
             lcd.print(" ");
             lcd.setCursor(c, 0);
           }
 
           else {
-            lcd.setCursor(c - 16, 3);
+            lcd.setCursor(c - 16, 1);
             lcd.print(" ");
-            lcd.setCursor(c - 16, 3);
+            lcd.setCursor(c - 16, 1);
           }
 
         }
@@ -863,7 +881,7 @@ void Terminal() {
           }
 
           else if (c > 15) {
-            lcd.setCursor(c - 16, 3);
+            lcd.setCursor(c - 16, 1);
           }
 
           if (c == 32) {
@@ -1032,7 +1050,7 @@ void Sensor() {
     lcd.setCursor(0, 0);
     lcd.print("Temperature : ");
     lcd.print(DHT.temperature);
-    lcd.setCursor(0, 3);
+    lcd.setCursor(0, 1);
     lcd.print("Humidity :");
     lcd.println(DHT.humidity);
 
@@ -1049,7 +1067,7 @@ void Sensor() {
 
 void ultrasonic() {
 
-  while (exitloop = !1) {
+  while (exitloop!) {
 
     long duration, inches, cm;
 
@@ -1072,10 +1090,10 @@ void ultrasonic() {
     lcd.print("in, ");
     lcd.print(cm);
     lcd.print("cm     ");
-    lcd.setCursor(0, 3);
+    lcd.setCursor(0, 1);
     lcd.print("PING:D");
     lcd.print(pingPin);
-    lcd.setCursor(8, 3);
+    lcd.setCursor(8, 1);
     lcd.print("PONG:D");
     lcd.print(pongPin);
 
@@ -1231,7 +1249,7 @@ void EPROM() {
 
       value = EEPROM.read(address);
       lcd.print("  The value of ");
-      lcd.setCursor(0, 3);
+      lcd.setCursor(0, 1);
       lcd.print("Addr ");
       lcd.print(address);
       lcd.print(" is ");
@@ -1260,7 +1278,7 @@ void EPROM() {
       while (ok != 1) {
         lcd.setCursor(0, 0);
         lcd.print("   Waiting : ");
-        lcd.setCursor(6, 3);
+        lcd.setCursor(6, 1);
         lcd.print("value");
 
         if (Serial.available()) {
@@ -1290,7 +1308,7 @@ void EPROM() {
       lcd.print("Value ");
       lcd.print(value);
       lcd.print(" Was ");
-      lcd.setCursor(0, 3);
+      lcd.setCursor(0, 1);
       lcd.print("   written to ");
       delay(2000);
       lcd.clear();
@@ -1340,14 +1358,14 @@ void StringRead() {
           }
 
           else {
-            if (muv < 16) {
+            if (muv < 14) {
               muv = muv + 1;
               Serial.print(chr);
               data.concat(chr);
             }
           }
 
-          if (muv < 16) {
+          if (muv <= 14) {
             lcd.clear();
             lcd.print("$>");
             lcd.print(data);  
@@ -1358,3 +1376,4 @@ void StringRead() {
   }
   lcd.clear();
 }
+
