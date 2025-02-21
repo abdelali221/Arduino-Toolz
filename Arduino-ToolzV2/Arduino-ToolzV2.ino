@@ -557,7 +557,7 @@ void runEEPROM() {
         if (Serial.available()) {
           Resume = true;
           EVF = Serial.read() - 48; 
-          lcd.print(ReadWrite_Switch);
+          lcd.print(EVF);
           delay(500);
           lcd.clear();
         }
