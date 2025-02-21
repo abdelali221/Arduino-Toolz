@@ -35,6 +35,7 @@ int ReadWrite_Switch;
 int value; // EEPROM Read/Write
 int address; // EEPROM Address
 int EVF; // EEPROM Value Format Switch
+int Rave; // Rave even/odd switch
 
 // Booleans
 bool exitloop = false;
@@ -761,8 +762,40 @@ void Return() {
 
 void runRave() {
   while (!exitloop) {
-    for (int i = 0; i < 10; i++) {
-      
+    for (int i = 0; i < 16; i++) {
+      lcd.write(255);
+      lcd.print(" ");
+    }
+
+    lcd.setCursor(0, 1);
+    for (int i = 0; i < 16; i++) {
+      lcd.print(" ");
+      lcd.write(255);
+    }
+
+    lcd.setCursor(0, 0);
+    delay(200);
+
+    for (int i = 0; i < 16; i++) {
+      lcd.print(" ");
+      lcd.write(255);
+    }
+
+    lcd.setCursor(0, 1);
+    for (int i = 0; i < 16; i++) {
+      lcd.write(255);
+      lcd.print(" ");
+    }
+
+    delay(200);
+
+    if (Serial.available()) {
+      char data = Serial.read();
+
+      if (data == 'b') {
+        lcd.clear();
+        exitloop = true;
+      }
     }
   }
 }
