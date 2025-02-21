@@ -1377,3 +1377,52 @@ void StringRead() {
   lcd.clear();
 }
 
+void commandhelp() {
+  Serial.print("// Command List :");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("Analog");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("Clock");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("Cls (Clear the Screen)");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("Customchar")    Serial.write(13);
+  Serial.write(10);
+  Serial.print("Die");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("Digital");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("EEPROM");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("IR");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("Keypad");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("LCDinit (To hot-plug an LCD screen)");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("LCDLOff");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("LCDLOn");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("Sensor (For DHT11)");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("Terminal");
+  Serial.write(13);
+  Serial.write(10);
+  Serial.print("UltraR (For the UltraSonic Sensor)");
+  Serial.write(13);
+  Serial.write(10);
+}
