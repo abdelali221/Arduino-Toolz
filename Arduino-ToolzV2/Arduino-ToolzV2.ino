@@ -13,7 +13,7 @@ const int BACK_SPACE1 = 8;
 const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
-const String commandlist[] = {"Analog", "DHT11", "Digital", "EEPROM", "Help", "LCD", "Terminal"}; // Command list
+const String commandlist[] = {"Analog", "DHT11", "Digital", "EEPROM", "Help", "LCD", "Rave", "Terminal"}; // Command list
 const String welcome[] = {"// Arduino Toolz", "Proudly developped by Abdelali221", "Ver 2.0 (New Release/Entirely rewritten)", "Github : https://github.com/abdelali221/", "There is a list of the commands :"}; // Welcome Text
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
