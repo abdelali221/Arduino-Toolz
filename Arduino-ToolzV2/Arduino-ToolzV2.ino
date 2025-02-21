@@ -697,4 +697,6 @@ void serialwelcome() {
   Serial.write(CR);
   Serial.write(NL);
   runHelp();
+  Serial.write(CR);
+  Serial.write(NL);
 }
