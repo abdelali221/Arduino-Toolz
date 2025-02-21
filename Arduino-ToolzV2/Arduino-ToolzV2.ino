@@ -1,6 +1,9 @@
 #include <LiquidCrystal_I2C.h>
 #include <EEPROM.h>
+#include <DFRobot_DHT11.h>
 
+DFRobot_DHT11 DHT;
+#define DHT11_PIN 4
 // Constants
 const int BACK_SPACE = 127;
 const int NL = 10; // NewLine command
@@ -10,7 +13,7 @@ const int BACK_SPACE1 = 8;
 const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
-const String commandlist[] = {"Analog", "Digital", "EEPROM", "Help", "LCD", "Terminal"}; // Command list
+const String commandlist[] = {"Analog", "DHT11", "Digital", "EEPROM", "Help", "LCD", "Terminal"}; // Command list
 const String welcome[] = {"// Arduino Toolz", "Proudly developped by Abdelali221", "Ver 2.0 (New Release/Entirely rewritten)", "Github : https://github.com/abdelali221/", "There is a list of the commands :"}; // Welcome Text
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
@@ -56,7 +59,7 @@ void setup() {
 
 void loop() {
   if (Serial.available()) { // Wait for incoming data
-    zeroing(); // Sets all System booleans for loop and wait to false
+    noexitloop(); // Sets all System booleans for loop and wait to false
     lcd.clear();
     lcd.print("$>"); 
     CommandSet(); // Recieve and manage the data
@@ -70,6 +73,11 @@ void CommandSet() {
     // Compares the data to the available commands :
   if (data == "Analog") {
     AnalogTool();
+  } else if (data == "Cls") {
+    Serial.write(27);
+    Serial.print("[2J");
+  } else if (data == "DHT11") {
+    DHT11();
   } else if (data == "Digital") {
     DigitalTool();
   } else if (data == "EEPROM") {
@@ -78,6 +86,8 @@ void CommandSet() {
     runHelp();
   } else if (data == "LCD") {
     runLCDutility();
+  } else if (data == "Rave") {
+    runRave();
   } else if (data == "Terminal") {
     runTerminal();
   } 
@@ -187,8 +197,7 @@ void runHelp() {
     Serial.write(NL);
     Serial.print(commandlist[i]);
   }
-  Serial.write(CR);
-  Serial.write(NL);
+  Return();
 }
 
 void DigitalTool() {
@@ -226,7 +235,7 @@ void DigitalTool() {
     return;
   }
 
-  zeroing();
+  noexitloop();
 
   while (!Resume) {
     lcd.setCursor(0, 0);
@@ -250,7 +259,7 @@ void DigitalTool() {
   }
 
   lcd.clear();
-  zeroing();
+  noexitloop();
 
   switch (ReadWrite_Switch) {
 
@@ -364,7 +373,7 @@ void AnalogTool() {
     return;
   }
 
-  zeroing();
+  noexitloop();
 
   while (!exitloop) {
     lcd.setCursor(0, 0);
@@ -416,20 +425,18 @@ void AnalogTool() {
   }
 }
 
-void zeroing() {
+void noexitloop() {
   exitloop = false; // Init the Stay in loop
   Resume = false; // Init the Wait For action
 }
 
 void runLCDutility() {
   Serial.print("// LCDutility");
-  Serial.write(CR);
-  Serial.write(NL);
+  Return();
   Serial.print("What you want to do?");
-  Serial.write(CR);
-  Serial.write(NL);
+  Return();
   Serial.print(" 1 - Init the LCD screen. 2 - Turn the Backlight on/off. 3 - Enable Cursor.");
-  zeroing();
+  noexitloop();
   while (!Resume) {
     if (Serial.available()) {
       chr = Serial.read();
@@ -439,7 +446,7 @@ void runLCDutility() {
       Resume = true;
     }
   }
-  zeroing();
+  noexitloop();
 
   if (chr == '1') { // 1 = LCDinit
     lcd.init();
@@ -483,6 +490,9 @@ void runLCDutility() {
 }
 
 void runEEPROM() {
+
+  address = 0;
+  value = 0;
   lcd.print("  EEPROM Tool");
   delay(2000);
 
@@ -500,7 +510,7 @@ void runEEPROM() {
 
         if (ReadWrite_Switch == 1) {
 
-          zeroing();
+          noexitloop();
           lcd.clear();
 
           while (!Resume) {
@@ -510,7 +520,7 @@ void runEEPROM() {
             lcd.print("C=2  W=1 ");
 
             if (Serial.available()) {
-              zeroing();
+              Resume = true;
               ReadWrite_Switch = Serial.read() - 48;
               lcd.print(ReadWrite_Switch);
               delay(500);
@@ -525,7 +535,7 @@ void runEEPROM() {
         }
       }
 
-      if (ReadWrite_Switch < 0 || ReadWrite_Switch > 1) { // Already explained in Digital/Analog
+      if (ReadWrite_Switch < 0 || ReadWrite_Switch > 2) { // Already explained in Digital/Analog
         lcd.print(" Invalid Choice!");
         delay(1000);
         lcd.clear();
@@ -533,7 +543,7 @@ void runEEPROM() {
       }
     }
 
-    zeroing();
+    noexitloop();
 
     if (ReadWrite_Switch == 0) {
 
@@ -553,7 +563,7 @@ void runEEPROM() {
       }
     }
 
-    zeroing();
+    noexitloop();
 
     if (ReadWrite_Switch != 2) {
         // Reads the Address
@@ -594,7 +604,7 @@ void runEEPROM() {
       return;
     }
 
-  zeroing();
+  noexitloop();
 
   lcd.clear();
 
@@ -694,9 +704,65 @@ void serialwelcome() {
     Serial.write(CR);
     Serial.write(NL);
   }  
-  Serial.write(CR);
-  Serial.write(NL);
+  Return();
   runHelp();
+  Return();
+}
+
+void DHT11() {
+
+  Return();
+  Serial.print("Plug your DHT11 | VCC to VCC, GND to GND and data to D4");
+  Return();
+  Serial.print("Once done press Enter");
+  
+  while (!exitloop) {
+    if (Serial.available()) {
+      char chr = Serial.read();
+
+      if (chr == NL || chr == CR) {
+        lcd.clear();
+        Return();
+        exitloop = true;
+      }
+    }
+  }
+
+  noexitloop();
+
+  while (!exitloop) {
+
+    delay(500);
+    DHT.read(DHT11_PIN);
+    lcd.setCursor(0, 0);
+    lcd.print("Temp : ");
+    lcd.print(DHT.temperature);
+    lcd.print(" C ");
+    lcd.setCursor(0, 1);
+    lcd.print("Humid : ");
+    lcd.print(DHT.humidity);
+    lcd.print(" % ");
+
+    if (Serial.available()) {
+      char data = Serial.read();
+
+      if (data == 'b') {
+        lcd.clear();
+        exitloop = true;
+      }
+    }
+  }
+}
+
+void Return() {
   Serial.write(CR);
   Serial.write(NL);
+}
+
+void runRave() {
+  while (!exitloop) {
+    for (int i = 0; i < 10; i++) {
+      
+    }
+  }
 }
