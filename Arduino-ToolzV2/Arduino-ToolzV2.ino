@@ -21,7 +21,6 @@ int hrs12 = 12; // Hours (AM/PM)
 */
 
 // System Variables
-String data; // Serial Receive
 char chr; // Incoming characters
 int chrcount; // String char counter
 int c; // Terminal Counter
@@ -57,8 +56,8 @@ void loop() {
 }
 
 void CommandSet() {
-  data = ""; // Empty the Serial buffer
-  StringRead(); // Read the incoming data
+  
+  String data = StringRead(); // Read the incoming data
 
   if (data == "Analog") {
     AnalogTool();
@@ -73,13 +72,16 @@ void CommandSet() {
   Serial.print("$>");
 }
 
-void StringRead() {
+String StringRead() {
+
+  String data;
+  data = "";
 
   while (!Resume) {
     if (Serial.available()) {
       while (Serial.available() > 0) {
         char chr = Serial.read();
-
+      
         if (chr == CR || chr == NL) {
           Serial.write(CR);
           Serial.write(NL);
@@ -87,7 +89,7 @@ void StringRead() {
           Resume = true;
         } else {
           if (chr == BACK_SPACE || chr == BACK_SPACE1) {
-            if (chrcount > 0) {
+             if (chrcount > 0) {
               Serial.print("\b \b");
               chrcount--;
               data.remove(chrcount, 1);
@@ -97,7 +99,7 @@ void StringRead() {
               chrcount++;
               Serial.print(chr);
               data.concat(chr);
-            }
+            } 
           }
 
           if (chrcount <= 14) {
@@ -108,6 +110,7 @@ void StringRead() {
       }
     }
   }
+  return data;
 }
 
 void runTerminal() {
