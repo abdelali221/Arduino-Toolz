@@ -47,4 +47,4 @@ After uploading the project you should get "Waiting for a command" on the LCD. T
  
 # Notes :
 
-	DON'T USE THE Arduino-Toolz AS IT'S DEPRECATED NOW
+	DON'T USE THE ArduinoToolz AS IT'S DEPRECATED NOW, Use ArduinoToolzV2 instead.
