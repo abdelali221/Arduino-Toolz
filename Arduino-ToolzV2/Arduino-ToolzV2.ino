@@ -13,11 +13,12 @@ const String commandlist[] = {"Terminal", "Help", "Analog", "LCD"}; // Command l
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
-// Time Variables
+/*// Time Variables
 int sec = 0; // Seconds
 int min = 0; // Minutes
 int hrs = 0; // Hours
 int hrs12 = 12; // Hours (AM/PM)
+*/
 
 // System Variables
 String data; // Serial Receive
@@ -73,7 +74,8 @@ void CommandSet() {
 }
 
 void StringRead() {
-  while (!exitloop) {
+
+  while (!Resume) {
     if (Serial.available()) {
       while (Serial.available() > 0) {
         char chr = Serial.read();
@@ -82,7 +84,7 @@ void StringRead() {
           Serial.write(CR);
           Serial.write(NL);
           lcd.clear();
-          exitloop = true;
+          Resume = true;
         } else {
           if (chr == BACK_SPACE || chr == BACK_SPACE1) {
             if (chrcount > 0) {
@@ -276,7 +278,7 @@ void runLCDutility() {
   }
   zeroing();
 
-  if (chr == '1') {
+  if (chr == '1') { // 1 = LCDinit
     lcd.init();
     lcd.noBacklight();
     delay(500);
@@ -290,7 +292,7 @@ void runLCDutility() {
     lcd.clear();
   }
 
-  else if (chr == '2') {
+  else if (chr == '2') { // 2 = Backlight
     Serial.write(CR);
     Serial.write(NL);
     Serial.print("ON or OFF? 1 - ON / 2 - OFF");
@@ -311,7 +313,7 @@ void runLCDutility() {
     }
   }
 
-  else if (chr == '3') {
+  else if (chr == '3') { // 3 = Cursor toggle
     lcd.cursor_on();
   }
 
