@@ -15,7 +15,7 @@ const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
 
-const String commandlist[] = 
+const char* commandlist[] = 
 
 { " Analog",
   " DHT11",
@@ -24,10 +24,10 @@ const String commandlist[] =
   " Help",
   " LCD",
   " Rave",
-  " Terminal"  
+  " Terminal"
 }; // Command list
 
-const String welcome[] = 
+const char* welcome[] = 
 
 { "// Arduino Toolz",
   " Proudly developped by Abdelali221",
@@ -125,6 +125,7 @@ void StringRead(char* buffer, int maxLength) {
       if (chr == NL || chr == CR) {
         buffer[index] = '\0'; // Null-terminate the string
         ReturnToline();
+        lcd.clear();
         return;
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) { // Backspace
         if (index > 0) {
