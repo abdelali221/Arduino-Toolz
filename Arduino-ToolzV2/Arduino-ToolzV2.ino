@@ -6,33 +6,33 @@ DFRobot_DHT11 DHT;
 #define DHT11_PIN 4
 // Constants
 const int BACK_SPACE = 127;
+const int BACK_SPACE_ALT = 8;
 const int NL = 10; // NewLine command
 const int CR = 13; // Carriage Return command
 const int ESC = 27;
-const int BACK_SPACE1 = 8;
 const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
 
 const String commandlist[] = 
 
-{ "Analog",
-  "DHT11",
-  "Digital",
-  "EEPROM",
-  "Help",
-  "LCD",
-  "Rave",
-  "Terminal"
+{ " Analog",
+  " DHT11",
+  " Digital",
+  " EEPROM",
+  " Help",
+  " LCD",
+  " Rave",
+  " Terminal"
 }; // Command list
 
 const String welcome[] = 
 
 { "// Arduino Toolz",
-  "Proudly developped by Abdelali221",
-  "Ver 2.0 (New Release/Entirely rewritten)",
-  "Github : https://github.com/abdelali221/",
-  "There is a list of the commands :"
+  " Proudly developped by Abdelali221",
+  " Ver 2.0 (New Release/Entirely rewritten)",
+  " Github : https://github.com/abdelali221/",
+  " There is a list of the commands :"
 }; // Welcome Text
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
@@ -55,6 +55,7 @@ int value; // EEPROM Read/Write
 int address; // EEPROM Address
 int EVF; // EEPROM Value Format Switch
 int Rave; // Rave even/odd switch
+int MaxDigits; // Max Digit number for Pin Value (1 for Analog/ 2 for Digital)
 
 // Booleans
 bool exitloop = false;
@@ -132,7 +133,7 @@ String StringRead() {
           Serial.write(NL); // Sends New Line to the client terminal
           lcd.clear();
           return data; // Returns the String to compare
-        } else if (chr == BACK_SPACE || chr == BACK_SPACE1) { // Backspace
+        } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) { // Backspace
           if (chrcount > 0) { // This is to make sure you don't delete the $>, and so the charcount doesn't become negative
             Serial.print("\b \b"); // Backspace command
             chrcount--; 
@@ -166,7 +167,7 @@ void runTerminal() {
       char chr = Serial.read(); // Read the data character by character
 
       if (chr != CR && chr != NL) { // Verify if there is no NL or CR
-        if (chr == BACK_SPACE || chr == BACK_SPACE1) {
+        if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
           Serial.print("\b\e[K"); // Clear Screen command
 
           if (c > 0) {
@@ -218,33 +219,13 @@ void runHelp() {
     Serial.write(NL);
     Serial.print(commandlist[i]);
   }
-  Return();
+  ReturnToline();
 }
 
 void DigitalTool() {
-  while (!Resume) {
-    Pin = 0; // Reset Pin
-    lcd.setCursor(0, 0);
-    lcd.print(" Waiting : PIN");
 
-    if (Serial.available()) {
-      char chr = Serial.read();
-      Serial.print(chr);
-
-      if (chr == NL || chr == CR) {
-        Serial.write(CR);
-        Serial.write(NL);
-        Resume = true; // Exit from wait state
-      } else {
-        if (c != 0 && chr != '0') { // Doesn't add 1 to c if the first value sent is 0
-          c++;
-        } else if (c < 3) {
-          Pin = Pin * 10 + chr - 48; // Multiply the old value by 10 then add the new value
-        }
-      }
-    }
-  }
-
+  MaxDigits = 2;
+  Pin = PinSelect(); // Reset Pin
   lcd.clear();
   
   if (Pin < 0 || Pin > 13) { // Checks if the Pin number is valid
@@ -346,9 +327,9 @@ void DigitalTool() {
 }  
 
 void AnalogTool() {
-  
-  Pin = PinSelect();
 
+  MaxDigits = 1;
+  Pin = PinSelect();
   lcd.clear();
 
   if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid
@@ -425,12 +406,12 @@ void noexitloop() {
 
 void runLCDutility() {
   Serial.print("// LCDutility");
-  Return();
-  Serial.print("What you want to do?");
-  Return();
+  ReturnToline();
+  Serial.print("What do you want to do?");
+  ReturnToline();
   Serial.print(" 1 - Init the LCD screen. 2 - Turn the Backlight on/off.");
-  Return();
-  Serial.print(" 3 - Enable/Disable Cursor. 4 - Enable/Disable Blink : ");
+  ReturnToline();
+  Serial.print(" 3 - Enable/Disable Cursor. 4 - Enable/Disable Blink. : ");
   noexitloop();
   while (!Resume) {
     if (Serial.available()) {
@@ -477,7 +458,7 @@ void runLCDutility() {
   } else if (chr == '3') { // 3 = Cursor
     Serial.write(CR);
     Serial.write(NL);
-    Serial.print("Enable or Disable? 1 - Enable / 2 - Disabe");
+    Serial.print("Enable or Disable? 1 - Enable / 2 - Disable :");
     while (!Resume) {
       if (Serial.available()) {
         chr = Serial.read();
@@ -496,7 +477,7 @@ void runLCDutility() {
   } else if (chr == '4') { // 3 = Cursor
     Serial.write(CR);
     Serial.write(NL);
-    Serial.print("Enable or Disable? 1 - Enable / 2 - Disabe");
+    Serial.print("Enable or Disable? 1 - Enable / 2 - Disable : ");
     while (!Resume) {
       if (Serial.available()) {
         chr = Serial.read();
@@ -610,7 +591,7 @@ void runEEPROM() {
           char chr = Serial.read();
 
           if (chr == NL || chr == CR) {
-            Return();
+            ReturnToline();
             Resume = true;
           }
 
@@ -693,6 +674,7 @@ void runEEPROM() {
           Serial.print(chr);
 
           if (chr == NL || chr == CR) {
+            ReturnToline();
             Resume = true;
           }
 
@@ -746,16 +728,16 @@ void serialwelcome() {
     Serial.write(CR);
     Serial.write(NL);
   }  
-  Return();
+  ReturnToline();
   runHelp();
-  Return();
+  ReturnToline();
 }
 
 void DHT11() {
 
-  Return();
+  ReturnToline();
   Serial.print("Plug your DHT11 | VCC to VCC, GND to GND and data to D4");
-  Return();
+  ReturnToline();
   Serial.print("Once done press Enter");
   
   while (!Resume) {
@@ -764,7 +746,7 @@ void DHT11() {
 
       if (chr == NL || chr == CR) {
         lcd.clear();
-        Return();
+        ReturnToline();
         Resume = true;
       }
     }
@@ -794,7 +776,7 @@ void DHT11() {
   }
 }
 
-void Return() {
+void ReturnToline() {
   Serial.write(CR);
   Serial.write(NL);
 }
@@ -841,6 +823,9 @@ void runRave() {
 
 int PinSelect() {
 
+  Pin = 0;
+  c = 0;
+
   while (!Resume) {
     lcd.setCursor(0, 0);
     lcd.print(" Waiting : Pin");
@@ -849,11 +834,22 @@ int PinSelect() {
 
       char chr = Serial.read();
       
-      if (chr == NL || chr == CR) {
-        Return();
+      if (chr == NL || chr == CR ) {
+        ReturnToline();
         return Pin;
+      } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
+        c = 0;
+        Pin = 0;
+        lcd.setCursor(7, 1);
+        lcd.print(Pin);
+        lcd.print("  ");
       } else {
-        int Pin = (Pin*10) + chr - 48;
+        if (c < MaxDigits) {
+          c++;
+          Pin = (Pin*10) + chr - 48;
+          lcd.setCursor(7, 1);
+          lcd.print(Pin);
+        }
       }
     }
   }
