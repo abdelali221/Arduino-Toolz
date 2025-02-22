@@ -13,8 +13,27 @@ const int BACK_SPACE1 = 8;
 const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
-const String commandlist[] = {"Analog", "DHT11", "Digital", "EEPROM", "Help", "LCD", "Rave", "Terminal"}; // Command list
-const String welcome[] = {"// Arduino Toolz", "Proudly developped by Abdelali221", "Ver 2.0 (New Release/Entirely rewritten)", "Github : https://github.com/abdelali221/", "There is a list of the commands :"}; // Welcome Text
+
+const String commandlist[] = 
+
+{ "Analog",
+  "DHT11",
+  "Digital",
+  "EEPROM",
+  "Help",
+  "LCD",
+  "Rave",
+  "Terminal"
+}; // Command list
+
+const String welcome[] = 
+
+{ "// Arduino Toolz",
+  "Proudly developped by Abdelali221",
+  "Ver 2.0 (New Release/Entirely rewritten)",
+  "Github : https://github.com/abdelali221/",
+  "There is a list of the commands :"
+}; // Welcome Text
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
@@ -42,14 +61,15 @@ bool exitloop = false;
 bool Resume = false;
 
 void setup() {
-  // Initialization sequence
+    // Initialization sequence
   Serial.begin(9600); // Serial begin at 9600bps
   Serial.write(ESC); // ESC command (Required to send the Clear Screen instruction)
-  Serial.print("[2J");
-  serialwelcome(); // Clear screen
+  Serial.print("[2J"); // Clear the terminal
   lcd.init(); // LCD Screen Init
   lcd.backlight(); // Backlight On
   lcd.clear(); // Clear the screen
+    // Welcome Screen :
+  serialwelcome(); 
   lcd.print("  Arduino Toolz");
   lcd.setCursor(3, 1);
   lcd.print("Release 2.0");
@@ -133,7 +153,7 @@ String StringRead() {
         if (chrcount <= 14) { // Makes sure you're within the limit of the LCD screen
           lcd.setCursor(2, 0);
           lcd.print(data);
-          lcd.setCursor(0, 1);
+          lcd.setCursor(chrcount + 2, 0);
         }
       }
     }
@@ -307,16 +327,6 @@ void DigitalTool() {
             Serial.write(NL);
             lcd.clear();
             Resume = true;
-          } else if (chr == BACK_SPACE || chr == BACK_SPACE1) {
-            c--;
-            Pin = 0;
-            Serial.print("\b \b");
-          } else {
-            if (c != 0 && chr != '0') {
-            c++;
-            } else if (c < 3) {
-              Pin = Pin * 10 + chr - 48; // Multiply the old value by 10 then add the new value
-            }
           }
         }
       }
@@ -337,39 +347,11 @@ void DigitalTool() {
 
 void AnalogTool() {
   
-  Pin = 0;
-  while (!Resume) {
-    lcd.setCursor(0, 0);
-    lcd.print(" Waiting : PIN");
-
-    if (Serial.available()) {
-
-      char chr = Serial.read();
-      lcd.setCursor(0, 1);
-      lcd.print(chr);
-      lcd.print(c);
-      lcd.print(Pin);
-      
-      if (chr == NL || chr == CR) {
-        Return();
-        Resume = true;
-      } else {          
-        if (c < 1) {
-          c++;
-          Serial.print(chr);
-          Pin = chr;
-        } else {
-          Pin = 0;
-          c = 0;
-          Serial.print("\b \b");
-        }
-      }
-    }
-  }
+  Pin = PinSelect();
 
   lcd.clear();
 
-  if (Pin < '0' || Pin > '5') { // Checks if the Pin number is valid
+  if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid
     lcd.print("   Invalid PIN");
     lcd.setCursor(4, 1);
     lcd.print(" number!");
@@ -383,41 +365,41 @@ void AnalogTool() {
   while (!exitloop) {
     lcd.setCursor(0, 0);
     lcd.print("PIN A");
-    lcd.print(Pin - 49);
+    lcd.print(Pin);
     lcd.print(" : ");
 
     switch (Pin) { // Checks what Pin was selected
-      case '0':
+      case 0:
         lcd.print(" ");
         lcd.print(analogRead(A0));
         lcd.print(" ");
         delay(50);
         break;
-      case '1':
+      case 1:
         lcd.print(" ");
         lcd.print(analogRead(A1));
         delay(50);
         lcd.print(" ");
         break;
-      case '2':
+      case 2:
         lcd.print(" ");
         lcd.print(analogRead(A2));
         delay(50);
         lcd.print(" ");
         break;
-      case '3':
+      case 3:
         lcd.print(" ");
         lcd.print(analogRead(A3));
         delay(50);
         lcd.print(" ");
         break;
-      case '4':
+      case 4:
         lcd.print(" ");
         lcd.print(analogRead(A4));
         delay(50);
         lcd.print(" ");
         break;
-      case '5':
+      case 5:
         lcd.print(" ");
         lcd.print(analogRead(A5));
         delay(50);
@@ -446,7 +428,9 @@ void runLCDutility() {
   Return();
   Serial.print("What you want to do?");
   Return();
-  Serial.print(" 1 - Init the LCD screen. 2 - Turn the Backlight on/off. 3 - Enable Cursor.");
+  Serial.print(" 1 - Init the LCD screen. 2 - Turn the Backlight on/off.");
+  Return();
+  Serial.print(" 3 - Enable/Disable Cursor. 4 - Enable/Disable Blink : ");
   noexitloop();
   while (!Resume) {
     if (Serial.available()) {
@@ -471,9 +455,7 @@ void runLCDutility() {
     }
 
     lcd.clear();
-  }
-
-  else if (chr == '2') { // 2 = Backlight
+  } else if (chr == '2') { // 2 = Backlight
     Serial.write(CR);
     Serial.write(NL);
     Serial.print("ON or OFF? 1 - ON / 2 - OFF");
@@ -492,10 +474,44 @@ void runLCDutility() {
     } else if (chr == '2') {
       lcd.noBacklight();
     }
-  }
+  } else if (chr == '3') { // 3 = Cursor
+    Serial.write(CR);
+    Serial.write(NL);
+    Serial.print("Enable or Disable? 1 - Enable / 2 - Disabe");
+    while (!Resume) {
+      if (Serial.available()) {
+        chr = Serial.read();
+        Serial.print(chr);
+        Serial.write(CR);
+        Serial.write(NL);
+        Resume = true;
+      }
+    }
 
-  else if (chr == '3') { // 3 = Cursor toggle
-    lcd.cursor_on();
+    if (chr == '1') {
+      lcd.cursor_on();
+    } else if (chr == '2') {
+      lcd.cursor_off();
+    }
+  } else if (chr == '4') { // 3 = Cursor
+    Serial.write(CR);
+    Serial.write(NL);
+    Serial.print("Enable or Disable? 1 - Enable / 2 - Disabe");
+    while (!Resume) {
+      if (Serial.available()) {
+        chr = Serial.read();
+        Serial.print(chr);
+        Serial.write(CR);
+        Serial.write(NL);
+        Resume = true;
+      }
+    }
+
+    if (chr == '1') {
+      lcd.blink_on();
+    } else if (chr == '2') {
+      lcd.blink_off();
+    }
   }
 
 }
@@ -506,6 +522,7 @@ void runEEPROM() {
   value = 0;
   lcd.print("  EEPROM Tool");
   delay(2000);
+  noexitloop();
 
   while (!Resume) {
     lcd.setCursor(0, 0);
@@ -573,10 +590,16 @@ void runEEPROM() {
         }
       }
     }
-
+    if (EVF < 0 || EVF > 2) { // Already explained in Digital/Analog
+      lcd.print(" Invalid Choice!");
+      delay(1000);
+      lcd.clear();
+      return;
+    }
     noexitloop();
 
     if (ReadWrite_Switch != 2) {
+      c = 0;
         // Reads the Address
       while (!Resume) {
         lcd.setCursor(0, 0);
@@ -585,23 +608,22 @@ void runEEPROM() {
         if (Serial.available()) {
 
           char chr = Serial.read();
-          Serial.print(chr);
 
           if (chr == NL || chr == CR) {
-            Serial.write(13);
-            Serial.write(10);
+            Return();
             Resume = true;
           }
 
           else {
 
-            if (c != 0 && chr != '0') {
+            if (c == 0 && chr == '0') {
+              Serial.print(chr);
+            } else {
               Serial.print(chr);
               c++;
-            }
-
-            if (c < 5) {
+              if (c < 5) {
               address = address * 10 + chr - 48;
+              }
             }
           }
         }
@@ -812,6 +834,26 @@ void runRave() {
       if (data == 'b') {
         lcd.clear();
         exitloop = true;
+      }
+    }
+  }
+}
+
+int PinSelect() {
+
+  while (!Resume) {
+    lcd.setCursor(0, 0);
+    lcd.print(" Waiting : Pin");
+
+    if (Serial.available()) {
+
+      char chr = Serial.read();
+      
+      if (chr == NL || chr == CR) {
+        Return();
+        return Pin;
+      } else {
+        int Pin = (Pin*10) + chr - 48;
       }
     }
   }
