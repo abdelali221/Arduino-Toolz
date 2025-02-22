@@ -1,6 +1,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <EEPROM.h>
 #include <DFRobot_DHT11.h>
+#include <string.h>
 
 DFRobot_DHT11 DHT;
 #define DHT11_PIN 4
@@ -14,7 +15,7 @@ const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
 
-const String commandlist[] = 
+const char* commandlist[] = 
 
 { " Analog",
   " DHT11",
@@ -23,16 +24,18 @@ const String commandlist[] =
   " Help",
   " LCD",
   " Rave",
-  " Terminal"
+  " Terminal",
+  "\0"
 }; // Command list
 
-const String welcome[] = 
+const char* welcome[] = 
 
 { "// Arduino Toolz",
   " Proudly developped by Abdelali221",
   " Ver 2.0 (New Release/Entirely rewritten)",
   " Github : https://github.com/abdelali221/",
-  " There is a list of the commands :"
+  " There is a list of the commands :",
+  "\0"
 }; // Welcome Text
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
@@ -87,75 +90,62 @@ void loop() {
 
 void CommandSet() {
   
-  String data = StringRead(); // Read the incoming data
+  char command[15]; // Array to store the command
+  StringRead(command, sizeof(command)); // Read the incoming data
 
     // Compares the data to the available commands :
-  if (data == "Analog") {
+  if (strcmp(command, "Analog") == 0) {
     AnalogTool();
-  } else if (data == "Cls") {
+  } else if (strcmp(command, "Cls") == 0) {
     Serial.write(27);
     Serial.print("[2J");
-  } else if (data == "DHT11") {
+  } else if (strcmp(command, "DHT11") == 0) {
     DHT11();
-  } else if (data == "Digital") {
+  } else if (strcmp(command, "Digital") == 0) {
     DigitalTool();
-  } else if (data == "EEPROM") {
+  } else if (strcmp(command, "EEPROM") == 0) {
     runEEPROM();
-  } else if (data == "Help") {
+  } else if (strcmp(command, "Help") == 0) {
     runHelp();
-  } else if (data == "LCD") {
+  } else if (strcmp(command, "Intro") == 0) {
+    serialwelcome();
+  } else if (strcmp(command, "LCD") == 0) {
     runLCDutility();
-  } else if (data == "Rave") {
+  } else if (strcmp(command, "Rave") == 0) {
     runRave();
-  } else if (data == "Terminal") {
+  } else if (strcmp(command, "Terminal") == 0) {
     runTerminal();
   } 
   Serial.print("$>");
 }
 
-String StringRead() {
-
-  String data;
-  data = ""; // Reset the String
-  int chrcount = 0; // Reset the char counter
-
-  while (!Resume) { // Resume is the wait flag
+void StringRead(char* buffer, int maxLength) {
+  int index = 0;
+  while (index < maxLength - 1) { // Leave space for null terminator
     if (Serial.available()) {
-      while (Serial.available() > 0) {
-        chr = Serial.read(); // Read the data char by char
-
-          // Comparing the data (receive char) to some commands
-        if (chr == CR || chr == NL) { // Return button
-          Serial.write(CR); // Sends Cariage return to the client terminal
-          Serial.write(NL); // Sends New Line to the client terminal
-          lcd.clear();
-          return data; // Returns the String to compare
-        } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) { // Backspace
-          if (chrcount > 0) { // This is to make sure you don't delete the $>, and so the charcount doesn't become negative
-            Serial.print("\b \b"); // Backspace command
-            chrcount--; 
-            data.remove(chrcount, 1); // Remove the last char of the string
-            chr = 0; // Resets the value of char
-            lcd.clear();
-            lcd.print("$>");
-            lcd.print(data); // Re-print the String on the lcd screen
-          }
-        } else {
-          if (chrcount < 14 && chrcount >= 0) { // Chars can be added to the String
-            chrcount++;
-            Serial.print(chr);
-            data.concat(chr); // Adds the latest char to the string
-          } 
+      char chr = Serial.read();
+      if (chr == NL || chr == CR) {
+        buffer[index] = '\0'; // Null-terminate the string
+        ReturnToline();
+        return;
+      } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) { // Backspace
+        if (index > 0) {
+          Serial.print("\b \b"); // Erase character on serial monitor
+          lcd.setCursor(index + 1, 0);
+          lcd.print(" ");
+          lcd.setCursor(index + 1, 0); 
+          index--;
         }
-
-        if (chrcount <= 14) { // Makes sure you're within the limit of the LCD screen
-          lcd.setCursor(2, 0);
-          lcd.print(data);
-          lcd.setCursor(chrcount + 2, 0);
-        }
+      } else { 
+        if (index < 15) {
+          buffer[index++] = chr;
+          Serial.print(chr);
+          lcd.print(chr);
+        }  
       }
     }
   }
+  buffer[index] = '\0'; // Ensure null termination if max length is reached
 }
 
 void runTerminal() {
@@ -211,13 +201,22 @@ void runTerminal() {
 
 void runHelp() {
   // Print the command list through Serial
-  Serial.print("// Command list :");
-  for (int i = 0; i < sizeof(commandlist) / sizeof(commandlist[0]); i++) { // Cycle through each Value of the array
-    Serial.write(CR);
-    Serial.write(NL);
-    Serial.print(commandlist[i]);
+  Serial.println("// Command list :");
+
+  for(int i = 0; commandlist[i] != '\0'; i++){
+    Serial.println(commandlist[i]);
   }
   ReturnToline();
+}
+
+void serialwelcome() {
+  // Prints the Welcome Sequence over Serial :
+  for(int i = 0; welcome[i] != '\0'; i++){
+    Serial.print(welcome[i]);
+    ReturnToline();
+  }
+  
+
 }
 
 void DigitalTool() {
@@ -719,18 +718,6 @@ void runEEPROM() {
   }
 }
 
-void serialwelcome() {
-  // Prints the Welcome Sequence over Serial :
-  for (int i = 0; i < sizeof(welcome) / sizeof(welcome[0]); i++) {
-    Serial.print(welcome[i]);
-    Serial.write(CR);
-    Serial.write(NL);
-  }  
-  ReturnToline();
-  runHelp();
-  ReturnToline();
-}
-
 void DHT11() {
 
   ReturnToline();
@@ -820,31 +807,27 @@ void runRave() {
 }
 
 int PinSelect() {
-
   int Pin = 0;
   int c = 0; // Char Counter
-
   while (!Resume) {
     lcd.setCursor(0, 0);
     lcd.print(" Waiting : Pin");
-
     if (Serial.available()) {
-
       chr = Serial.read();
-      
       if (chr == NL || chr == CR ) {
         ReturnToline();
         return Pin;
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
-        c = 0;
-        Pin = 0;
-        lcd.setCursor(7, 1);
-        lcd.print(Pin);
-        lcd.print("  ");
+          if(c > 0){
+            c--;
+            Pin = Pin / 10;
+            lcd.setCursor(7 + c , 1);
+            lcd.print(" ");
+          }
       } else {
         if (c < MaxDigits) {
           c++;
-          Pin = (Pin*10) + chr - 48;
+          Pin = (Pin * 10) + chr - 48;
           lcd.setCursor(7, 1);
           lcd.print(Pin);
         }
