@@ -336,28 +336,32 @@ void DigitalTool() {
 }  
 
 void AnalogTool() {
+  
+  Pin = 0;
   while (!Resume) {
-    Pin = 0;
     lcd.setCursor(0, 0);
     lcd.print(" Waiting : PIN");
 
     if (Serial.available()) {
-      char chr = Serial.read();
-      Serial.print(chr);
 
-      if (chr == NL || chr == CR) { // Already explained in Digital
-        Serial.write(CR);
-        Serial.write(NL);
+      char chr = Serial.read();
+      lcd.setCursor(0, 1);
+      lcd.print(chr);
+      lcd.print(c);
+      lcd.print(Pin);
+      
+      if (chr == NL || chr == CR) {
+        Return();
         Resume = true;
-      } else if (chr == BACK_SPACE || chr == BACK_SPACE1) {
-        c--;
-        Pin = 0;
-        Serial.print("\b \b");
-      } else {
-        if (c != 0 && chr != '0') {
+      } else {          
+        if (c < 1) {
           c++;
-        } else if (c < 2) {
-          Pin = Pin * 10 + chr - 48; // Multiply the old value by 10 then add the new value
+          Serial.print(chr);
+          Pin = chr;
+        } else {
+          Pin = 0;
+          c = 0;
+          Serial.print("\b \b");
         }
       }
     }
@@ -365,7 +369,7 @@ void AnalogTool() {
 
   lcd.clear();
 
-  if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid
+  if (Pin < '0' || Pin > '5') { // Checks if the Pin number is valid
     lcd.print("   Invalid PIN");
     lcd.setCursor(4, 1);
     lcd.print(" number!");
@@ -379,36 +383,42 @@ void AnalogTool() {
   while (!exitloop) {
     lcd.setCursor(0, 0);
     lcd.print("PIN A");
-    lcd.print(Pin);
+    lcd.print(Pin - 49);
     lcd.print(" : ");
 
     switch (Pin) { // Checks what Pin was selected
-      case 0:
+      case '0':
+        lcd.print(" ");
         lcd.print(analogRead(A0));
         lcd.print(" ");
         delay(50);
         break;
-      case 1:
+      case '1':
+        lcd.print(" ");
         lcd.print(analogRead(A1));
         delay(50);
         lcd.print(" ");
         break;
-      case 2:
+      case '2':
+        lcd.print(" ");
         lcd.print(analogRead(A2));
         delay(50);
         lcd.print(" ");
         break;
-      case 3:
+      case '3':
+        lcd.print(" ");
         lcd.print(analogRead(A3));
         delay(50);
         lcd.print(" ");
         break;
-      case 4:
+      case '4':
+        lcd.print(" ");
         lcd.print(analogRead(A4));
         delay(50);
         lcd.print(" ");
         break;
-      case 5:
+      case '5':
+        lcd.print(" ");
         lcd.print(analogRead(A5));
         delay(50);
         lcd.print(" ");
@@ -577,7 +587,7 @@ void runEEPROM() {
           char chr = Serial.read();
           Serial.print(chr);
 
-          if (chr == '\n' || chr == '\r') {
+          if (chr == NL || chr == CR) {
             Serial.write(13);
             Serial.write(10);
             Resume = true;
@@ -585,9 +595,9 @@ void runEEPROM() {
 
           else {
 
-            if (c != 0 && chr != 48) {
+            if (c != 0 && chr != '0') {
               Serial.print(chr);
-              c = c + 1;
+              c++;
             }
 
             if (c < 5) {
@@ -660,14 +670,14 @@ void runEEPROM() {
           char chr = Serial.read();
           Serial.print(chr);
 
-          if (chr == '\n' || chr == '\r') {
+          if (chr == NL || chr == CR) {
             Resume = true;
           }
 
           else {
 
             if (c != 0 && chr != '0') {
-              c = c + 1;
+              c++;
             }
 
             if (c < 4) {
@@ -726,19 +736,17 @@ void DHT11() {
   Return();
   Serial.print("Once done press Enter");
   
-  while (!exitloop) {
+  while (!Resume) {
     if (Serial.available()) {
       char chr = Serial.read();
 
       if (chr == NL || chr == CR) {
         lcd.clear();
         Return();
-        exitloop = true;
+        Resume = true;
       }
     }
   }
-
-  noexitloop();
 
   while (!exitloop) {
 
