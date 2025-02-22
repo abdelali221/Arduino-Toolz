@@ -46,17 +46,14 @@ int hrs12 = 12; // Hours (AM/PM)
 */
 
 // System Variables
-char chr; // Incoming characters
-int chrcount; // String char counter
 int c; // Char Counter
-int Pin; // Pin Variable for Analog/Digital Tools
 int ReadWrite_Switch;
 int value; // EEPROM Read/Write
 int address; // EEPROM Address
 int EVF; // EEPROM Value Format Switch
 int Rave; // Rave even/odd switch
 int MaxDigits; // Max Digit number for Pin Value (1 for Analog/ 2 for Digital)
-
+char chr;
 // Booleans
 bool exitloop = false;
 bool Resume = false;
@@ -120,12 +117,12 @@ String StringRead() {
 
   String data;
   data = ""; // Reset the String
-  chrcount = 0; // Reset the char counter
+  int chrcount = 0; // Reset the char counter
 
   while (!Resume) { // Resume is the wait flag
     if (Serial.available()) {
       while (Serial.available() > 0) {
-        char chr = Serial.read(); // Read the data char by char
+        chr = Serial.read(); // Read the data char by char
 
           // Comparing the data (receive char) to some commands
         if (chr == CR || chr == NL) { // Return button
@@ -162,9 +159,10 @@ String StringRead() {
 }
 
 void runTerminal() {
+
   if (Serial.available()) {
     if (Serial.available() > 0) {
-      char chr = Serial.read(); // Read the data character by character
+      chr = Serial.read(); // Read the data character by character
 
       if (chr != CR && chr != NL) { // Verify if there is no NL or CR
         if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
@@ -224,8 +222,8 @@ void runHelp() {
 
 void DigitalTool() {
 
-  MaxDigits = 2;
-  Pin = PinSelect(); // Reset Pin
+  int MaxDigits = 2;
+  int Pin = PinSelect(); // Pin Variable for Analog/Digital Tools
   lcd.clear();
   
   if (Pin < 0 || Pin > 13) { // Checks if the Pin number is valid
@@ -277,7 +275,7 @@ void DigitalTool() {
         lcd.print(digitalRead(Pin));
 
         if (Serial.available()) {
-          char chr = Serial.read();
+          chr = Serial.read();
 
           if (chr == 'b') {
             lcd.clear();
@@ -300,7 +298,7 @@ void DigitalTool() {
         lcd.print("Waiting : State");
 
         if (Serial.available()) {
-          char chr = Serial.read();
+          chr = Serial.read();
           Serial.print(chr);
 
           if (chr == NL || chr == CR) {
@@ -329,7 +327,7 @@ void DigitalTool() {
 void AnalogTool() {
 
   MaxDigits = 1;
-  Pin = PinSelect();
+  int Pin = PinSelect(); // Pin Variable for Analog/Digital Tools
   lcd.clear();
 
   if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid
@@ -389,7 +387,7 @@ void AnalogTool() {
     }
 
     if (Serial.available()) {
-      char chr = Serial.read();
+      chr = Serial.read();
 
       if (chr == 'b') { // Exits if b is sent
         lcd.clear();
@@ -439,7 +437,7 @@ void runLCDutility() {
   } else if (chr == '2') { // 2 = Backlight
     Serial.write(CR);
     Serial.write(NL);
-    Serial.print("ON or OFF? 1 - ON / 2 - OFF");
+    Serial.print("ON or OFF? 1 - ON / 2 - OFF : ");
     while (!Resume) {
       if (Serial.available()) {
         chr = Serial.read();
@@ -458,7 +456,7 @@ void runLCDutility() {
   } else if (chr == '3') { // 3 = Cursor
     Serial.write(CR);
     Serial.write(NL);
-    Serial.print("Enable or Disable? 1 - Enable / 2 - Disable :");
+    Serial.print("Enable or Disable? 1 - Enable / 2 - Disable : ");
     while (!Resume) {
       if (Serial.available()) {
         chr = Serial.read();
@@ -499,8 +497,8 @@ void runLCDutility() {
 
 void runEEPROM() {
 
-  address = 0;
-  value = 0;
+  int address = 0;
+  int value = 0;
   lcd.print("  EEPROM Tool");
   delay(2000);
   noexitloop();
@@ -580,7 +578,7 @@ void runEEPROM() {
     noexitloop();
 
     if (ReadWrite_Switch != 2) {
-      c = 0;
+      int c = 0;
         // Reads the Address
       while (!Resume) {
         lcd.setCursor(0, 0);
@@ -588,7 +586,7 @@ void runEEPROM() {
 
         if (Serial.available()) {
 
-          char chr = Serial.read();
+          chr = Serial.read();
 
           if (chr == NL || chr == CR) {
             ReturnToline();
@@ -670,7 +668,7 @@ void runEEPROM() {
 
         if (Serial.available()) {
 
-          char chr = Serial.read();
+          chr = Serial.read();
           Serial.print(chr);
 
           if (chr == NL || chr == CR) {
@@ -742,7 +740,7 @@ void DHT11() {
   
   while (!Resume) {
     if (Serial.available()) {
-      char chr = Serial.read();
+      chr = Serial.read();
 
       if (chr == NL || chr == CR) {
         lcd.clear();
@@ -766,9 +764,9 @@ void DHT11() {
     lcd.print(" % ");
 
     if (Serial.available()) {
-      char data = Serial.read();
+      chr = Serial.read();
 
-      if (data == 'b') {
+      if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
         lcd.clear();
         exitloop = true;
       }
@@ -823,8 +821,8 @@ void runRave() {
 
 int PinSelect() {
 
-  Pin = 0;
-  c = 0;
+  int Pin = 0;
+  int c = 0; // Char Counter
 
   while (!Resume) {
     lcd.setCursor(0, 0);
@@ -832,7 +830,7 @@ int PinSelect() {
 
     if (Serial.available()) {
 
-      char chr = Serial.read();
+      chr = Serial.read();
       
       if (chr == NL || chr == CR ) {
         ReturnToline();
