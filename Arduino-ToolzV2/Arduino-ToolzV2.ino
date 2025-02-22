@@ -214,6 +214,7 @@ void serialwelcome() {
   }
   ReturnToline();
   runHelp();
+  ReturnToline();
 }
 
 void DigitalTool() {
