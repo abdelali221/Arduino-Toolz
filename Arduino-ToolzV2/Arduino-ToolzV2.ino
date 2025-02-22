@@ -15,7 +15,7 @@ const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
 
-const char* commandlist[] = 
+const String commandlist[] = 
 
 { " Analog",
   " DHT11",
@@ -24,18 +24,16 @@ const char* commandlist[] =
   " Help",
   " LCD",
   " Rave",
-  " Terminal",
-  "\0"
+  " Terminal"  
 }; // Command list
 
-const char* welcome[] = 
+const String welcome[] = 
 
 { "// Arduino Toolz",
   " Proudly developped by Abdelali221",
   " Ver 2.0 (New Release/Entirely rewritten)",
   " Github : https://github.com/abdelali221/",
-  " There is a list of the commands :",
-  "\0"
+  " There is a list of the commands :"
 }; // Welcome Text
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
@@ -206,17 +204,16 @@ void runHelp() {
   for(int i = 0; commandlist[i] != '\0'; i++){
     Serial.println(commandlist[i]);
   }
-  ReturnToline();
+
 }
 
 void serialwelcome() {
   // Prints the Welcome Sequence over Serial :
-  for(int i = 0; welcome[i] != '\0'; i++){
-    Serial.print(welcome[i]);
-    ReturnToline();
+  for (int i = 0; i < sizeof(welcome) / sizeof(welcome[0]); i++) {
+    Serial.println(welcome[i]);
   }
-  
-
+  ReturnToline();
+  runHelp();
 }
 
 void DigitalTool() {
