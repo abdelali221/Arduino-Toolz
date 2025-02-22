@@ -614,21 +614,30 @@ void runEEPROM() {
 
       value = EEPROM.read(address);
       lcd.print("  The value of ");
-      lcd.setCursor(0, 1);
-      lcd.print("Addr ");
-      lcd.print(address);
-      lcd.print(" is ");
+      
       switch (EVF) {
         case 0:
+          lcd.setCursor(0, 1);
+          lcd.print("Addr ");
+          lcd.print(address);
+          lcd.print(" is ");
           lcd.print(value);
           break;
 
         case 1:
+          lcd.setCursor(0, 1);
+          lcd.print("Addr ");
+          lcd.print(address);
+          lcd.print(" is ");
           lcd.print(value, HEX);
           break;
 
         case 2:
-          delay(2000);
+          lcd.setCursor(4, 1);
+          lcd.print("Addr ");
+          lcd.print(address);
+          lcd.print(" is ");
+          delay(1000);
           lcd.clear();
           lcd.setCursor(3, 0);
           lcd.print(value, BIN);
