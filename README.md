@@ -3,7 +3,7 @@
 
 # Features :
 
- - Clock
+ - Clock (Not implemented yet on V2)
  - Terminal
  - Analog/Digital PIN Tools (Beta)
  - Module Testers (IR/UltraSonic/DHT11/Keypad) (Beta)
@@ -23,16 +23,16 @@ After uploading the project you should get "Waiting for a command" on the LCD. T
 # The commands : 
 
  - Terminal
- - Clock (Not implemented yet)
+ - Clock (Not implemented yet on V2)
  - Analog
  - Digital
- - IR (Not implemented yet)
+ - IR (Not implemented yet on V2)
  - Sensor (For DHT11) 
- - UltraR (For the UltraSonic Sensor) (Not implemented yet)
- - Keypad (Not implemented yet)
+ - UltraR (For the UltraSonic Sensor) Not implemented yet on V2)
+ - Keypad (Not implemented yet on V2)
  - LCD (LCD tools)
  - EEPROM
- - Rave (pattern for LCD TEST)
+ - Rave (pattern for LCD TEST) (Not available in V1)
  - Help
  
 # Changelog :
