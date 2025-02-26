@@ -131,6 +131,7 @@ void CommandSet() {
     Serial.println("Invalid command!");
   }
   Serial.print("$>");
+  lcd.print("$>");
 }
 
 void StringRead(char* buffer, int maxLength) {
