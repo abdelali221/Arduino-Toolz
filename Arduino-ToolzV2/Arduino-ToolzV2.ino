@@ -1,9 +1,9 @@
 #include <LiquidCrystal_I2C.h>
 #include <EEPROM.h>
-#include <DFRobot_DHT11.h>
+#include "DHT11.h"
 #include <string.h>
 
-DFRobot_DHT11 DHT;
+DHT11 DHT;
 #define DHT11_PIN 4
 // Constants
 const int BACK_SPACE = 127;
@@ -22,9 +22,11 @@ const char* commandlist[] =
   " Digital",
   " EEPROM",
   " Help",
+  " Intro",
   " LCD",
   " Rave",
-  " Terminal"
+  " Terminal",
+  "\0"
 }; // Command list
 
 const char* welcome[] = 
@@ -33,8 +35,19 @@ const char* welcome[] =
   " Proudly developped by Abdelali221",
   " Ver 2.0 (New Release/Entirely rewritten)",
   " Github : https://github.com/abdelali221/",
-  " There is a list of the commands :"
+  " There is a list of the commands :",
+  "\0"
 }; // Welcome Text
+
+const char* DHTtext[] = 
+
+{ "ERROR! The DHT11 Pin returned invalid data",
+  "Either it's broken or not connected correctly",
+  "ERROR! The DHT11 is not connected",
+  "Plug your DHT11 | VCC to VCC, GND to GND and data to D4",
+  "Once done press Enter",
+  "\0"
+};
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
@@ -75,6 +88,7 @@ void setup() {
   delay(2000);
   lcd.clear();
   Serial.print("$>"); // For the Shell
+  lcd.print("$>"); // For the Shell
 }
 
 void loop() {
@@ -113,13 +127,15 @@ void CommandSet() {
     runRave();
   } else if (strcmp(command, "Terminal") == 0) {
     runTerminal();
-  } 
+  } else {
+    Serial.println("Invalid command!");
+  }
   Serial.print("$>");
 }
 
 void StringRead(char* buffer, int maxLength) {
   int index = 0;
-  while (index < maxLength - 1) { // Leave space for null terminator
+  while (!Resume) { // Leave space for null terminator
     if (Serial.available()) {
       char chr = Serial.read();
       if (chr == NL || chr == CR) {
@@ -136,15 +152,14 @@ void StringRead(char* buffer, int maxLength) {
           index--;
         }
       } else { 
-        if (index < 15) {
+        if (index < 14) {
           buffer[index++] = chr;
           Serial.print(chr);
           lcd.print(chr);
-        }  
+        }
       }
     }
   }
-  buffer[index] = '\0'; // Ensure null termination if max length is reached
 }
 
 void runTerminal() {
@@ -200,12 +215,15 @@ void runTerminal() {
 
 void runHelp() {
   // Print the command list through Serial
-  Serial.println("// Command list :");
+  ReturnToline();
+  Serial.print("// Command list :");
 
-  for(int i = 0; commandlist[i] != '\0'; i++){
-    Serial.println(commandlist[i]);
+  for(int i = 0; i < sizeof(commandlist) / sizeof(commandlist[0]); i++){
+    ReturnToline();
+    Serial.print(commandlist[i]);
   }
 
+  ReturnToline();
 }
 
 void serialwelcome() {
@@ -213,9 +231,7 @@ void serialwelcome() {
   for (int i = 0; i < sizeof(welcome) / sizeof(welcome[0]); i++) {
     Serial.println(welcome[i]);
   }
-  ReturnToline();
   runHelp();
-  ReturnToline();
 }
 
 void DigitalTool() {
@@ -262,6 +278,8 @@ void DigitalTool() {
   switch (ReadWrite_Switch) {
 
     case 0: // Read
+
+      Serial.println("Press b To exit");
 
       while (!exitloop) {
 
@@ -338,6 +356,8 @@ void AnalogTool() {
   }
 
   noexitloop();
+
+  Serial.println("Press b To exit");
 
   while (!exitloop) {
     lcd.setCursor(0, 0);
@@ -585,21 +605,21 @@ void runEEPROM() {
         if (Serial.available()) {
 
           chr = Serial.read();
-
+          
           if (chr == NL || chr == CR) {
             ReturnToline();
             Resume = true;
-          }
+          } else {
+            if (chr <= '9' && chr >= '0') {
 
-          else {
-
-            if (c == 0 && chr == '0') {
-              Serial.print(chr);
-            } else {
-              Serial.print(chr);
-              c++;
-              if (c < 5) {
-              address = address * 10 + chr - 48;
+              if (c == 0 && chr == '0') {
+                Serial.print(chr);  
+              } else {
+                if (c < 5) {
+                  Serial.print(chr);
+                  c++;
+                  address = address * 10 + chr - 48;
+                }
               }
             }
           }
@@ -687,20 +707,35 @@ void runEEPROM() {
         }
       }
 
+      if (value < 0 || value > 255) {
+        lcd.clear();
+        lcd.print("Invalid Value!");
+        delay(3000);
+        lcd.clear();
+        return;
+      }
+
+      noexitloop();
       EEPROM.write(address, value);
-      lcd.clear();
-      lcd.print("Value ");
-      lcd.print(value);
-      lcd.print(" Was ");
-      lcd.setCursor(0, 1);
-      lcd.print("   written to ");
-      delay(2000);
-      lcd.clear();
-      lcd.print("  Address ");
-      lcd.print(address);
-      delay(1000);
-      lcd.clear();
-      break;
+      if (value == EEPROM.read(address)) {
+        lcd.clear();
+        lcd.print("Value ");
+        lcd.print(value);
+        lcd.print(" Was ");
+        lcd.setCursor(0, 1);
+        lcd.print("   written to ");
+        delay(2000);
+        lcd.clear();
+        lcd.print("  Address ");
+        lcd.print(address);
+        delay(1000);
+        lcd.clear();
+      } else {
+        lcd.clear();
+        lcd.print("ERROR WRITING VALUE!!");
+        delay(500);
+      }
+    break;
 
     case 2:
       for (int i = 0; i < EEPROM.length(); i++) {
@@ -708,7 +743,16 @@ void runEEPROM() {
         lcd.setCursor(0, 0);
         lcd.print("Address : ");
         lcd.print(i);
+        lcd.setCursor(5, 1);
+        if (EEPROM.read(i) != 0) {
+          lcd.clear();
+          lcd.print("ERROR!");
+          delay(500);
+          break;
+        }
       }
+
+      delay(200);
       lcd.clear();
       lcd.print("EEPROM is clear!");
       delay(3000);
@@ -719,10 +763,8 @@ void runEEPROM() {
 
 void DHT11() {
 
-  ReturnToline();
-  Serial.print("Plug your DHT11 | VCC to VCC, GND to GND and data to D4");
-  ReturnToline();
-  Serial.print("Once done press Enter");
+  Serial.println(DHTtext[3]);
+  Serial.println(DHTtext[4]);
   
   while (!Resume) {
     if (Serial.available()) {
@@ -735,11 +777,35 @@ void DHT11() {
       }
     }
   }
+  Serial.println("Press b To exit");
 
   while (!exitloop) {
 
     delay(500);
-    DHT.read(DHT11_PIN);
+    DHT.readata(DHT11_PIN);
+    switch (DHT.humidity) {
+    case -1:
+      lcd.clear();
+      lcd.print("  ERROR!");
+      Serial.println(DHTtext[2]);
+      Serial.print("Error Code : ");
+      Serial.println(DHT.humidity);
+      delay(1000);
+      lcd.clear();
+      return;
+    break;
+    case -2:
+      lcd.clear();
+      lcd.print("  ERROR!");
+      Serial.println(DHTtext[0]);
+      Serial.println(DHTtext[1]);
+      Serial.print("Error Code : ");
+      Serial.println(DHT.humidity);
+      delay(1000);
+      lcd.clear();
+      return;
+    break;
+    }
     lcd.setCursor(0, 0);
     lcd.print("Temp : ");
     lcd.print(DHT.temperature);
@@ -749,10 +815,10 @@ void DHT11() {
     lcd.print(DHT.humidity);
     lcd.print(" % ");
 
-    if (Serial.available()) {
+    if (Serial.available()) { 
       chr = Serial.read();
 
-      if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
+      if (chr == 'b') {
         lcd.clear();
         exitloop = true;
       }
@@ -766,6 +832,9 @@ void ReturnToline() {
 }
 
 void runRave() {
+
+  Serial.println("Press b To exit");
+
   while (!exitloop) {
     for (int i = 0; i < 16; i++) {
       lcd.write(255);
@@ -813,15 +882,17 @@ int PinSelect() {
     lcd.print(" Waiting : Pin");
     if (Serial.available()) {
       chr = Serial.read();
-      if (chr == NL || chr == CR ) {
-        ReturnToline();
-        return Pin;
+      if (chr == NL || chr == CR) {
+        if (c > 0) {
+          ReturnToline();
+          return Pin;
+        }
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
           if(c > 0){
             c--;
             Pin = Pin / 10;
             lcd.setCursor(7 + c , 1);
-            lcd.print(" ");
+            lcd.print("  ");
           }
       } else {
         if (c < MaxDigits) {
