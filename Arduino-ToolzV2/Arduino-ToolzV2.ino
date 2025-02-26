@@ -890,8 +890,8 @@ int PinSelect() {
         }
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
           if(c > 0){
-            c--;
-            Pin = Pin / 10;
+            c = 0;
+            Pin = 0;
             lcd.setCursor(7 + c , 1);
             lcd.print("  ");
           }
