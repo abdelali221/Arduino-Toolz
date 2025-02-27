@@ -14,7 +14,7 @@
 
 Just upload the Project to your Arduino after downloading the required Libraries, then you'll be done!
 
- -REQUIREMENTS :
+ REQUIREMENTS :
  - An Arduino (This program was tested with an Arduino UNO)
  - A I2C LCD display (Needed)
 
