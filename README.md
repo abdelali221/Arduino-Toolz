@@ -18,7 +18,8 @@ Just upload the Project to your Arduino after downloading the required Libraries
  - An Arduino (This program was tested with an Arduino UNO)
  - A I2C LCD display (Needed)
 
-After uploading the project you should get "Waiting for a command" on the LCD. The program is controllable via Serial with commands.
+After uploading the project you should get "Waiting for a command" on the LCD. The program is controllable via Serial with commands. (V1)
+On V2 otherwise, you'll get this : "$>" on both the lcd screen and the terminal, it's the command prompt.
 
 # The commands : 
 
