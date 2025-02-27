@@ -31,8 +31,8 @@ On V2 otherwise, you'll get this : "$>" on both the lcd screen and the terminal,
  - Sensor (For DHT11) 
  - UltraR (For the UltraSonic Sensor) Not implemented yet on V2)
  - Keypad (Not implemented yet on V2)
- - LCD (LCD tools)
- - EEPROM
+ - LCD (LCD tools) (Not available in V1)
+ - EEPROM tool
  - Rave (pattern for LCD TEST) (Not available in V1)
  - Help
  
@@ -48,4 +48,4 @@ On V2 otherwise, you'll get this : "$>" on both the lcd screen and the terminal,
  
 # Notes :
 
-	DON'T USE THE Arduino-ToolzV1 AS IT'S DEPRECATED NOW, Use ArduinoToolzV2 instead.
+	DON'T USE THE Arduino-ToolzV1 AS IT'S BUGGY AND DEPRECATED NOW, Use ArduinoToolzV2 instead.
