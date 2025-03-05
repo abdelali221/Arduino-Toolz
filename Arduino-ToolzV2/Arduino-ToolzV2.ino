@@ -18,6 +18,7 @@ const int LCD_ADDRESS = 0x27; // LCD Address
 const char* commandlist[] = 
 
 { " Analog",
+  " Cls",
   " DHT11",
   " Digital",
   " EEPROM",
@@ -66,8 +67,8 @@ int value; // EEPROM Read/Write
 int address; // EEPROM Address
 int EVF; // EEPROM Value Format Switch
 int Rave; // Rave even/odd switch
-int MaxDigits; // Max Digit number for Pin Value (1 for Analog/ 2 for Digital)
 char chr;
+
 // Booleans
 bool exitloop = false;
 bool Resume = false;
@@ -237,10 +238,14 @@ void serialwelcome() {
 
 void DigitalTool() {
 
-  int MaxDigits = 2;
-  int Pin = PinSelect(); // Pin Variable for Analog/Digital Tools
+  int Pin = PinSelect(2); // Pin Variable for Analog/Digital Tools
   lcd.clear();
-  
+
+  if (Pin == -1) {
+    Serial.println("Canceled");
+    return;
+  }
+    
   if (Pin < 0 || Pin > 13) { // Checks if the Pin number is valid
     lcd.print("   Invalid PIN");
     lcd.setCursor(4, 1);
@@ -343,9 +348,13 @@ void DigitalTool() {
 
 void AnalogTool() {
 
-  MaxDigits = 1;
-  int Pin = PinSelect(); // Pin Variable for Analog/Digital Tools
+  int Pin = PinSelect(1); // Pin Variable for Analog/Digital Tools
   lcd.clear();
+
+  if (Pin == -1) {
+    Serial.println("Canceled");
+    return;
+  }
 
   if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid
     lcd.print("   Invalid PIN");
@@ -875,7 +884,7 @@ void runRave() {
   }
 }
 
-int PinSelect() {
+int PinSelect(int MaxDigits) {
   int Pin = 0;
   int c = 0; // Char Counter
   while (!Resume) {
@@ -893,14 +902,18 @@ int PinSelect() {
             c = 0;
             Pin = 0;
             lcd.setCursor(7 + c , 1);
-            lcd.print("  ");
+            lcd.print("   ");
           }
+      } else if (chr == 'b') {
+        return Pin = -1;
       } else {
-        if (c < MaxDigits) {
-          c++;
-          Pin = (Pin * 10) + chr - 48;
-          lcd.setCursor(7, 1);
-          lcd.print(Pin);
+        if (chr >= '0' && chr <= '9') {
+          if (c < MaxDigits) {
+            c++;
+            Pin = (Pin * 10) + chr - 48;
+            lcd.setCursor(7, 1);
+            lcd.print(Pin);
+          }
         }
       }
     }
