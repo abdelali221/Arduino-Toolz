@@ -328,6 +328,9 @@ void DigitalTool() {
       while (!exitloop) {
         
         lcd.setCursor(10, 0);
+        if (Serial.available()) {
+          chr = Serial.read();
+        }
                 
         switch (chr) {
           case '0':
@@ -339,19 +342,15 @@ void DigitalTool() {
             lcd.print("HIGH");
             digitalWrite(Pin, HIGH);
           break;
-        }
-        if (Serial.available()) {
-          chr = Serial.read();
 
-          if (chr == 'b') {
+          case 'b':
             lcd.clear();
             exitloop = true;
-          }
+          break;
         }
       }
     break;
   }
-
 }  
 
 void AnalogTool() {
