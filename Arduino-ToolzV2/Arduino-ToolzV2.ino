@@ -14,6 +14,7 @@ const int ESC = 27;
 const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
+const int DIRECTION = 91;
 
 const char* commandlist[] = 
 
@@ -110,7 +111,7 @@ void CommandSet() {
   if (strcmp(command, "Analog") == 0) {
     AnalogTool();
   } else if (strcmp(command, "Cls") == 0) {
-    Serial.write(27);
+    Serial.write(ESC);
     Serial.print("[2J");
   } else if (strcmp(command, "DHT11") == 0) {
     DHT11();
@@ -140,6 +141,7 @@ void StringRead(char* buffer, int maxLength) {
   while (!Resume) { // Leave space for null terminator
     if (Serial.available()) {
       char chr = Serial.read();
+      
       if (chr == NL || chr == CR) {
         buffer[index] = '\0'; // Null-terminate the string
         ReturnToline();
@@ -317,20 +319,17 @@ void DigitalTool() {
 
       while (!Resume) {
         lcd.setCursor(0, 0);
-        lcd.print("Waiting : State");
+        lcd.print("LOW or HIGH?  ");
+        lcd.setCursor(4, 1);
+        lcd.print("L=0  H=1 ");
 
         if (Serial.available()) {
-          chr = Serial.read();
-          Serial.print(chr);
-
-          if (chr == NL || chr == CR) {
-            Serial.write(CR);
-            Serial.write(NL);
-            lcd.clear();
-            Resume = true;
-          }
+          Resume = true;
+          chr = Serial.read(); // Read the instruction
+          lcd.print(chr); // Print the selected instruction
+          delay(500);
         }
-      }
+      }    
 
       switch (chr) {
         case '0':
