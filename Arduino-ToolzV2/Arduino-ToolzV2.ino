@@ -287,15 +287,20 @@ void DigitalTool() {
 
     case 0: // Read
 
+      lcd.setCursor(0, 0);
+      lcd.print("    Read");
+      delay(1000);
+      lcd.clear();
+      lcd.print("PIN D");
+      lcd.print(Pin);
+      lcd.print(" : ");
+
       Serial.println("Press b To exit");
 
       while (!exitloop) {
 
-        lcd.setCursor(0, 0);
-        lcd.print("PIN D");
-        lcd.print(Pin);
-        lcd.print(" : ");
         pinMode(Pin, INPUT);
+        lcd.setCursor(10, 0);
         lcd.print(digitalRead(Pin));
 
         if (Serial.available()) {
@@ -316,33 +321,37 @@ void DigitalTool() {
       delay(1000);
       lcd.clear();
       pinMode(Pin, OUTPUT);
+      lcd.print("PIN D");
+      lcd.print(Pin);
+      lcd.print(" : ");
 
-      while (!Resume) {
-        lcd.setCursor(0, 0);
-        lcd.print("LOW or HIGH?  ");
-        lcd.setCursor(4, 1);
-        lcd.print("L=0  H=1 ");
+      while (!exitloop) {
+        
+        lcd.setCursor(10, 0);
+                
+        switch (chr) {
+          case '0':
+            lcd.print("LOW ");
+            digitalWrite(Pin, LOW);
+          break;
 
-        if (Serial.available()) {
-          Resume = true;
-          chr = Serial.read(); // Read the instruction
-          lcd.print(chr); // Print the selected instruction
-          delay(500);
+          case '1':
+            lcd.print("HIGH");
+            digitalWrite(Pin, HIGH);
+          break;
         }
-      }    
+        if (Serial.available()) {
+          chr = Serial.read();
 
-      switch (chr) {
-        case '0':
-          digitalWrite(Pin, LOW);
-        break;
-
-        case '1':
-          digitalWrite(Pin, HIGH);
-        break;
+          if (chr == 'b') {
+            lcd.clear();
+            exitloop = true;
+          }
+        }
       }
-
     break;
   }
+
 }  
 
 void AnalogTool() {
