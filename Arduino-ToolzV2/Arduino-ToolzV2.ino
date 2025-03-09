@@ -294,7 +294,6 @@ void DigitalTool() {
       lcd.print("PIN D");
       lcd.print(Pin);
       lcd.print(" : ");
-
       Serial.println("Press b To exit");
 
       while (!exitloop) {
@@ -324,7 +323,8 @@ void DigitalTool() {
       lcd.print("PIN D");
       lcd.print(Pin);
       lcd.print(" : ");
-
+      Serial.println("Press b To exit");
+      
       while (!exitloop) {
         
         lcd.setCursor(10, 0);
