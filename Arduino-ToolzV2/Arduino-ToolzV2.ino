@@ -55,17 +55,8 @@ const char* DHTtext[] =
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
-
-
-// System Variables
-int c; // Char Counter
-int ReadWrite_Switch;
-int value; // EEPROM Read/Write
-int address; // EEPROM Address
-int EVF; // EEPROM Value Format Switch
-int Rave; // Rave even/odd switch
-char chr;
-
+// Variables 
+int c = 0;
 // Booleans
 bool exitloop = false;
 bool Resume = false;
@@ -81,8 +72,8 @@ void setup() {
     // Welcome Screen :
   serialwelcome(); 
   lcd.print("  Arduino Toolz");
-  lcd.setCursor(3, 1);
-  lcd.print("Release 2.0");
+  lcd.setCursor(4, 1);
+  lcd.print("Ver 2.1");
   delay(2000);
   lcd.clear();
   Serial.print("$>"); // For the Shell
@@ -137,27 +128,28 @@ void CommandSet() {
 }
 
 void StringRead(char* buffer, int maxLength) {
-  int index = 0;
+  int c = 0;
+  char chr = 0;
   while (!Resume) { // Leave space for null terminator
     if (Serial.available()) {
-      char chr = Serial.read();
+      chr = Serial.read();
       
       if (chr == NL || chr == CR) {
-        buffer[index] = '\0'; // Null-terminate the string
+        buffer[c] = '\0'; // Null-terminate the string
         ReturnToline();
         lcd.clear();
         return;
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) { // Backspace
-        if (index > 0) {
+        if (c > 0) {
           Serial.print("\b \b"); // Erase character on serial monitor
-          lcd.setCursor(index + 1, 0);
+          lcd.setCursor(c + 1, 0);
           lcd.print(" ");
-          lcd.setCursor(index + 1, 0); 
-          index--;
+          lcd.setCursor(c + 1, 0); 
+          c--;
         }
       } else { 
-        if (index < 14) {
-          buffer[index++] = chr;
+        if (c < 14) {
+          buffer[c++] = chr;
           Serial.print(chr);
           lcd.print(chr);
         }
@@ -170,7 +162,7 @@ void runTerminal() {
 
   if (Serial.available()) {
     if (Serial.available() > 0) {
-      chr = Serial.read(); // Read the data character by character
+      char chr = Serial.read(); // Read the data character by character
 
       if (chr != CR && chr != NL) { // Verify if there is no NL or CR
         if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
@@ -240,6 +232,8 @@ void serialwelcome() {
 
 void DigitalTool() {
 
+  int ReadWrite_Switch = 0;
+  char chr = 0;
   int Pin = PinSelect(2); // Pin Variable for Analog/Digital Tools
   lcd.clear();
 
@@ -355,6 +349,7 @@ void DigitalTool() {
 
 void AnalogTool() {
 
+
   int Pin = PinSelect(1); // Pin Variable for Analog/Digital Tools
   lcd.clear();
 
@@ -423,7 +418,7 @@ void AnalogTool() {
     }
 
     if (Serial.available()) {
-      chr = Serial.read();
+      char chr = Serial.read();
 
       if (chr == 'b') { // Exits if b is sent
         lcd.clear();
@@ -439,6 +434,8 @@ void noexitloop() {
 }
 
 void runLCDutility() {
+
+  char chr = 0;  
   Serial.print("// LCDutility");
   ReturnToline();
   Serial.print("What do you want to do?");
@@ -537,8 +534,13 @@ void runLCDutility() {
 
 void runEEPROM() {
 
-  int address = 0;
-  int value = 0;
+  int ReadWrite_Switch = 0;
+  int c = 0;
+  int value = 0; // EEPROM Read/Write
+  int address = 0; // EEPROM Address
+  int EVF = 0; // EEPROM Value Format Switch
+  char chr = 0;
+
   lcd.print("  EEPROM Tool");
   delay(2000);
   noexitloop();
@@ -620,32 +622,10 @@ void runEEPROM() {
     if (ReadWrite_Switch != 2) {
       c = 0;
         // Reads the Address
-      while (!Resume) {
-        lcd.setCursor(0, 0);
-        lcd.print(" Waiting : Addr");
-
-        if (Serial.available()) {
-
-          chr = Serial.read();
-          
-          if (chr == NL || chr == CR) {
-            ReturnToline();
-            Resume = true;
-          } else {
-            if (chr <= '9' && chr >= '0') {
-
-              if (c == 0 && chr == '0') {
-                Serial.print(chr);  
-              } else {
-                if (c < 5) {
-                  Serial.print(chr);
-                  c++;
-                  address = address * 10 + chr - 48;
-                }
-              }
-            }
-          }
-        }
+      address = AddrSelect();
+      if (address == -1) {
+        Serial.println("Canceled.");
+        return;
       }
     }
     if (address > EEPROM.length()) { // Compares the address to the EEPROM length
@@ -785,6 +765,7 @@ void runEEPROM() {
 
 void DHT11() {
 
+  char chr = 0;
   Serial.println(DHTtext[3]);
   Serial.println(DHTtext[4]);
   
@@ -855,6 +836,8 @@ void ReturnToline() {
 
 void runRave() {
 
+  int Rave; // Rave even/odd switch
+
   Serial.println("Press b To exit");
 
   while (!exitloop) {
@@ -897,6 +880,7 @@ void runRave() {
 }
 
 int PinSelect(int MaxDigits) {
+  char chr = 0;
   int Pin = 0;
   int c = 0; // Char Counter
   while (!Resume) {
@@ -1014,4 +998,42 @@ void runUltraR() {
 
 long ms2cm(long microseconds) {
   return microseconds / 29 / 2;
+}
+
+int AddrSelect() {
+  char chr = 0;
+  int Addr = 0;
+  int c = 0; // Char Counter
+  while (!Resume) {
+    lcd.setCursor(0, 0);
+    lcd.print("Which Address? ");
+
+    if (Serial.available()) {
+      chr = Serial.read();
+      if (chr == NL || chr == CR) {
+        if (c > 0) {
+          ReturnToline();
+          return Addr;
+        }
+      } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
+          if(c > 0){
+            c = 0;
+            Addr = 0;
+            lcd.setCursor(5 , 1);
+            lcd.print("   ");
+          }
+      } else if (chr == 'b') {
+        return Addr = -1;
+      } else {
+        if (chr >= '0' && chr <= '9') {
+          if (c < 4) {
+            c++;
+            Addr = (Addr * 10) + chr - 48;
+            lcd.setCursor(9 - c, 1);
+            lcd.print(Addr);
+          }
+        }
+      }
+    }
+  }
 }
