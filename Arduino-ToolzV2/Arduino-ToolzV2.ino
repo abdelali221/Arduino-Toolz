@@ -14,7 +14,8 @@ const int ESC = 27;
 const int LCD_ROWS = 4; // LCD Rows
 const int LCD_COLUMNS = 16; // LCD Columns
 const int LCD_ADDRESS = 0x27; // LCD Address
-const int DIRECTION = 91;
+const int BELL = 7;
+
 
 const char* commandlist[] = 
 
@@ -28,6 +29,7 @@ const char* commandlist[] =
   " LCD",
   " Rave",
   " Terminal",
+  " UltraR",
   "\0"
 }; // Command list
 
@@ -35,7 +37,7 @@ const char* welcome[] =
 
 { "// Arduino Toolz",
   " Proudly developped by Abdelali221",
-  " Ver 2.0 (New Release/Entirely rewritten)",
+  " Ver 2.1 (New Release/Entirely rewritten)",
   " Github : https://github.com/abdelali221/",
   " There is a list of the commands :",
   "\0"
@@ -110,6 +112,8 @@ void CommandSet() {
     // Compares the data to the available commands :
   if (strcmp(command, "Analog") == 0) {
     AnalogTool();
+  } else if (strcmp(command, "Bell") == 0) {
+    Serial.write(BELL);
   } else if (strcmp(command, "Cls") == 0) {
     Serial.write(ESC);
     Serial.print("[2J");
@@ -129,6 +133,8 @@ void CommandSet() {
     runRave();
   } else if (strcmp(command, "Terminal") == 0) {
     runTerminal();
+  } else if (strcmp(command, "UltraR") == 0) {
+    runUltraR();
   } else {
     Serial.println("Invalid command!");
   }
@@ -244,7 +250,7 @@ void DigitalTool() {
   lcd.clear();
 
   if (Pin == -1) {
-    Serial.println("Canceled");
+    Serial.println("Canceled.");
     return;
   }
     
@@ -358,18 +364,19 @@ void AnalogTool() {
   int Pin = PinSelect(1); // Pin Variable for Analog/Digital Tools
   lcd.clear();
 
-  if (Pin == -1) {
-    Serial.println("Canceled");
-    return;
-  }
-
-  if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid
-    lcd.print("   Invalid PIN");
-    lcd.setCursor(4, 1);
-    lcd.print(" number!");
-    delay(1000);
-    lcd.clear();
-    return;
+  
+  if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid or the user canceled the operation
+    if (Pin == -1) {
+      Serial.println("Canceled.");
+      return;
+    } else {
+      lcd.print("   Invalid PIN");
+      lcd.setCursor(4, 1);
+      lcd.print(" number!");
+      delay(1000);
+      lcd.clear();
+      return;
+    }
   }
 
   noexitloop();
@@ -450,82 +457,86 @@ void runLCDutility() {
     if (Serial.available()) {
       chr = Serial.read();
       Serial.print(chr);
-      Serial.write(CR);
-      Serial.write(NL);
+      ReturnToline();
       Resume = true;
     }
   }
   noexitloop();
 
-  if (chr == '1') { // 1 = LCDinit
-    lcd.init();
-    lcd.noBacklight();
-    delay(500);
-    lcd.backlight();
+  switch (chr) {
 
-    for (int i = 0; i < 10; i++) {
-      delay(150);
-      lcd.print("TESTING DISPLAY");
-    }
-
-    lcd.clear();
-  } else if (chr == '2') { // 2 = Backlight
-    Serial.write(CR);
-    Serial.write(NL);
-    Serial.print("ON or OFF? 1 - ON / 2 - OFF : ");
-    while (!Resume) {
-      if (Serial.available()) {
-        chr = Serial.read();
-        Serial.print(chr);
-        Serial.write(CR);
-        Serial.write(NL);
-        Resume = true;
-      }
-    }
-
-    if (chr == '1') {
-      lcd.backlight();
-    } else if (chr == '2') {
+    case '1':// 1 = LCDinit
+      lcd.init();
       lcd.noBacklight();
-    }
-  } else if (chr == '3') { // 3 = Cursor
-    Serial.write(CR);
-    Serial.write(NL);
-    Serial.print("Enable or Disable? 1 - Enable / 2 - Disable : ");
-    while (!Resume) {
-      if (Serial.available()) {
-        chr = Serial.read();
-        Serial.print(chr);
-        Serial.write(CR);
-        Serial.write(NL);
-        Resume = true;
-      }
-    }
+      delay(500);
+      lcd.backlight();
 
-    if (chr == '1') {
-      lcd.cursor_on();
-    } else if (chr == '2') {
-      lcd.cursor_off();
-    }
-  } else if (chr == '4') { // 3 = Cursor
-    Serial.write(CR);
-    Serial.write(NL);
-    Serial.print("Enable or Disable? 1 - Enable / 2 - Disable : ");
-    while (!Resume) {
-      if (Serial.available()) {
-        chr = Serial.read();
-        Serial.print(chr);
-        Serial.write(CR);
-        Serial.write(NL);
-        Resume = true;
+      for (int i = 0; i < 10; i++) {
+        delay(150);
+        lcd.print("TESTING DISPLAY");
       }
-    }
 
-    if (chr == '1') {
-      lcd.blink_on();
-    } else if (chr == '2') {
-      lcd.blink_off();
-    }
+      lcd.clear();
+    break;
+
+    case '2': // 2 = Backlight
+      Serial.write(CR);
+      Serial.write(NL);
+      Serial.print("ON or OFF? 1 - ON / 2 - OFF : ");
+      while (!Resume) {
+        if (Serial.available()) {
+          chr = Serial.read();
+          Serial.print(chr);
+          ReturnToline();
+          Resume = true;
+        }
+      }
+
+      if (chr == '1') {
+        lcd.backlight();
+      } else if (chr == '2') {
+        lcd.noBacklight();
+      }
+    break;
+
+    case '3': // 3 = Cursor
+      ReturnToline();
+      Serial.print("Enable or Disable? 1 - Enable / 2 - Disable : ");
+      while (!Resume) {
+        if (Serial.available()) {
+          chr = Serial.read();
+          Serial.print(chr);
+          Serial.write(CR);
+          Serial.write(NL);
+          Resume = true;
+        }
+      }
+
+      if (chr == '1') {
+        lcd.cursor_on();
+      } else if (chr == '2') {
+        lcd.cursor_off();
+      }
+    break;
+
+    case '4': // 4 = Blink
+      ReturnToline();
+      Serial.print("Enable or Disable? 1 - Enable / 2 - Disable : ");
+      while (!Resume) {
+        if (Serial.available()) {
+          chr = Serial.read();
+          Serial.print(chr);
+          ReturnToline();
+          Resume = true;
+        }
+      }
+
+      if (chr == '1') {
+        lcd.blink_on();
+      } else if (chr == '2') {
+        lcd.blink_off();
+      }
+    break;
   }
 
 }
@@ -613,7 +624,7 @@ void runEEPROM() {
     noexitloop();
 
     if (ReadWrite_Switch != 2) {
-      int c = 0;
+      c = 0;
         // Reads the Address
       while (!Resume) {
         lcd.setCursor(0, 0);
@@ -896,7 +907,16 @@ int PinSelect(int MaxDigits) {
   int c = 0; // Char Counter
   while (!Resume) {
     lcd.setCursor(0, 0);
-    lcd.print(" Waiting : Pin");
+    lcd.print("Which Pin? ");
+    switch(MaxDigits) {
+      case 1:
+        lcd.print("0-9");
+      break;
+
+      case 2:
+        lcd.print("0-99");
+      break;
+    }
     if (Serial.available()) {
       chr = Serial.read();
       if (chr == NL || chr == CR) {
@@ -925,4 +945,68 @@ int PinSelect(int MaxDigits) {
       }
     }
   }
+}
+
+void runUltraR() {
+
+  int Pin = PinSelect(2);
+  lcd.clear();
+
+  if (Pin < 0 || Pin > 12) {
+    if (Pin == -1) {
+      Serial.println("Canceled.");
+      return;
+    } else {
+        lcd.print("   Invalid PIN");
+        lcd.setCursor(4, 1);
+        lcd.print(" number!");
+        delay(1000);
+        lcd.clear();
+      return;
+    }
+  }
+
+  Serial.println("Press b To exit");
+
+  while (!exitloop) {
+
+    long duration, cm;
+
+    pinMode(Pin, OUTPUT);
+    digitalWrite(Pin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(Pin, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(Pin, LOW);
+    pinMode(Pin + 1, INPUT);
+    duration = pulseIn(Pin + 1, HIGH);
+    cm = ms2cm(duration);
+
+    lcd.setCursor(0, 0);
+    lcd.print(cm);
+    lcd.print("cm ");
+    lcd.setCursor(7, 0);
+    lcd.print("Trig: D");
+    lcd.print(Pin);
+    lcd.setCursor(7, 1);
+    lcd.print("Echo: D");
+    lcd.print(Pin + 1);
+    delay(100);
+
+    if (Serial.available()) {
+      char chr = Serial.read();
+
+      if (chr == 'b') {
+        lcd.clear();
+        exitloop = true;
+      }
+
+    }
+
+  }
+
+}
+
+long ms2cm(long microseconds) {
+  return microseconds / 29 / 2;
 }
