@@ -55,6 +55,8 @@ const char* DHTtext[] =
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
+
+
 // System Variables
 int c; // Char Counter
 int ReadWrite_Switch;
@@ -974,18 +976,17 @@ void runUltraR() {
     duration = pulseIn(Pin + 1, HIGH);
     cm = ms2cm(duration);
 
-    if (cm > 400) {
+    if (cm < 400 && cm > 4) {
+      lcd.setCursor(0, 0);
+      lcd.print(cm);
+      lcd.print("cm  ");
+    } else {
       lcd.setCursor(0, 0);
       lcd.print("Out Of ");
       lcd.setCursor(0, 1);
       lcd.print("Range!");
-    } else {
-      lcd.setCursor(0, 0);
-      lcd.print(cm);
-      lcd.setCursor(5, 0);
-      lcd.print("cm");
-      lcd.setCursor(0, 1);
-      lcd.print("      ");
+      delay(500);
+      lcd.clear();
     }
 
     lcd.setCursor(7, 0);
