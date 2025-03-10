@@ -55,14 +55,6 @@ const char* DHTtext[] =
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
-// Soon :
-/*// Time Variables
-int sec = 0; // Seconds 
-int min = 0; // Minutes
-int hrs = 0; // Hours
-int hrs12 = 12; // Hours (AM/PM)
-*/
-
 // System Variables
 int c; // Char Counter
 int ReadWrite_Switch;
@@ -982,15 +974,27 @@ void runUltraR() {
     duration = pulseIn(Pin + 1, HIGH);
     cm = ms2cm(duration);
 
-    lcd.setCursor(0, 0);
-    lcd.print(cm);
-    lcd.print("cm ");
+    if (cm > 400) {
+      lcd.setCursor(0, 0);
+      lcd.print("Out Of ");
+      lcd.setCursor(0, 1);
+      lcd.print("Range!");
+    } else {
+      lcd.setCursor(0, 0);
+      lcd.print(cm);
+      lcd.setCursor(5, 0);
+      lcd.print("cm");
+      lcd.setCursor(0, 1);
+      lcd.print("      ");
+    }
+
     lcd.setCursor(7, 0);
     lcd.print("Trig: D");
     lcd.print(Pin);
     lcd.setCursor(7, 1);
     lcd.print("Echo: D");
     lcd.print(Pin + 1);
+    
     delay(100);
 
     if (Serial.available()) {
