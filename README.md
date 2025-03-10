@@ -3,12 +3,12 @@
 
 # Features :
 
- - Clock (Not implemented yet on V2)
+ - Clock (Not available on V2)
  - Terminal
- - Analog/Digital PIN Tools (Beta)
- - Module Testers (IR/UltraSonic/DHT11/Keypad) (Beta)
- - EEPROM Tool (Beta)
- - Hot-Plug a LCD Display (Beta)
+ - Analog/Digital PIN Tools
+ - Module Testers (IR/UltraSonic/DHT11/Keypad) (Some are not available on V2, and or broken on V1)
+ - EEPROM Tool
+ - Hot-Plug a LCD Display
 
  # How to Use :
 
@@ -24,16 +24,16 @@ On V2 otherwise, you'll get this : "$>" on both the lcd screen and the terminal,
 # The commands : 
 
  - Terminal
- - Clock (Not implemented yet on V2)
+ - Clock (Not available on V2)
  - Analog
  - Digital
- - IR (Not implemented yet on V2)
+ - IR (Not available on V2)
  - Sensor (For DHT11) 
- - UltraR (For the UltraSonic Sensor) Not implemented yet on V2)
- - Keypad (Not implemented yet on V2)
+ - UltraR (For the UltraSonic Sensor)
+ - Keypad (Not available on V2)
  - LCD (LCD tools) (Not available in V1)
  - EEPROM tool
- - Rave (pattern for LCD TEST) (Not available in V1)
+ - Rave (pattern for LCD TEST) (Not available on V1)
  - Help
  
 # Changelog :
@@ -45,6 +45,7 @@ On V2 otherwise, you'll get this : "$>" on both the lcd screen and the terminal,
  - b 0.9.4 (bug fixes/updated serial system)
  - 1.0 (FIRST RELEASE! ADDED CONTENT/FIXED BUGS/OPTIMIZATION)
  - 2.0 (MAJOR UPDATE : ENTIRELY REWRITTEN/MASSIVE IMPROVEMENTS)
+ - 2.1 (added UltraR to V2/changed mind about other functions because of ram limitation/improved user-friendliness)
  
 # Notes :
 
