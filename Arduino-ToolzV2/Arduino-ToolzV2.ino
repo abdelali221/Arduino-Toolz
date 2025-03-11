@@ -135,10 +135,12 @@ void StringRead(char* buffer, int maxLength) {
       chr = Serial.read();
       
       if (chr == NL || chr == CR) {
-        buffer[c] = '\0'; // Null-terminate the string
-        ReturnToline();
-        lcd.clear();
-        return;
+        if (c != 0) {
+          buffer[c] = '\0'; // Null-terminate the string
+          ReturnToline();
+          lcd.clear();
+          return;
+        }
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) { // Backspace
         if (c > 0) {
           Serial.print("\b \b"); // Erase character on serial monitor
@@ -198,8 +200,7 @@ void runTerminal() {
           Serial.print(chr); // Echo the char
         }
       } else {
-        Serial.write(CR); // Sends Cariage Return
-        Serial.write(NL); // Sends New Line
+        ReturnToline();
         c = 0;
         lcd.clear();
       }
