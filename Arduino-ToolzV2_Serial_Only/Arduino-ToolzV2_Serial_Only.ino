@@ -1,4 +1,5 @@
 #include <EEPROM.h>
+#include <Wire.h>
 #include "DHT11.h"
 #include <string.h>
 
@@ -119,7 +120,7 @@ void StringRead(char* buffer, int maxLength) {
           c--;
         }
       } else { 
-        if (c < 14) {
+        if (c < maxLength) {
           buffer[c++] = chr;
           Serial.print(chr);
         }
@@ -167,11 +168,10 @@ void DigitalTool() {
   }
 
   noexitloop();
+  Serial.println("Read or Write?  ");
+  Serial.print("R=0  W=1 : ");
 
   while (!Resume) {
-    Serial.println("Read or Write?  ");
-    Serial.print("R=0  W=1 : ");
-
     if (Serial.available()) {
       Resume = true;
       ReadWrite_Switch = Serial.read() - 48; // Read the instruction
@@ -188,6 +188,7 @@ void DigitalTool() {
 
   noexitloop();
   Serial.println("Press b To exit");
+  chr = '0';
 
   switch (ReadWrite_Switch) {
 
@@ -198,11 +199,14 @@ void DigitalTool() {
       Serial.print("PIN D");
       Serial.print(Pin);
       Serial.print(" : ");
-      
+            
       while (!exitloop) {
 
         pinMode(Pin, INPUT);
         Serial.print(digitalRead(Pin));
+        for (int i = 0; i < 1; i++) {
+          Serial.print("\b");
+        }
 
         if (Serial.available()) {
           chr = Serial.read();
@@ -223,6 +227,7 @@ void DigitalTool() {
       Serial.print(Pin);
       Serial.print(" : ");
       
+      
       while (!exitloop) {
         
         if (Serial.available()) {
@@ -231,19 +236,27 @@ void DigitalTool() {
                 
         switch (chr) {
           case '0':
-            Serial.println("LOW ");
+            Serial.print("LOW ");
             digitalWrite(Pin, LOW);
+            for (int i = 0; i < 4; i++) {
+              Serial.print("\b");
+            }
           break;
 
           case '1':
-            Serial.println("HIGH");
+            Serial.print("HIGH");
             digitalWrite(Pin, HIGH);
+            for (int i = 0; i < 4; i++) {
+              Serial.print("\b");
+            }
           break;
 
           case 'b':
+            ReturnToline();
             exitloop = true;
           break;
         }
+        
       }
     break;
   }
@@ -252,6 +265,7 @@ void DigitalTool() {
 void AnalogTool() {
 
   int Pin = PinSelect(1); // Pin Variable for Analog/Digital Tools
+  int buffer;
   
   if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid or the user canceled the operation
     if (Pin == -1) {
@@ -266,43 +280,95 @@ void AnalogTool() {
 
   noexitloop();
   Serial.println("Press b To exit");
-
+  Serial.print("PIN A");
+  Serial.print(Pin);
+  Serial.print(" : ");
+  
   while (!exitloop) {
-    Serial.print("PIN A");
-    Serial.print(Pin);
-    Serial.print(" : ");
-
+      
     switch (Pin) { // Checks what Pin was selected
       case 0:
-        Serial.println(analogRead(A0));
+        buffer = analogRead(A0);
+        if (buffer < 1000 && buffer >= 100) {
+          Serial.print("0");
+        } else if (buffer < 100 && buffer >= 10) {
+          Serial.print("00");
+        } else if (buffer < 10) {
+          Serial.print("000");
+        }
+        Serial.print(buffer);
         delay(50);
         break;
       case 1:
-        Serial.println(analogRead(A1));
+      buffer = analogRead(A1);
+        if (buffer < 1000 && buffer >= 100) {
+          Serial.print("0");
+        } else if (buffer < 100 && buffer >= 10) {
+          Serial.print("00");
+        } else if (buffer < 10) {
+          Serial.print("000");
+        }
+        Serial.print(buffer);
         delay(50);
         break;
       case 2:
-        Serial.println(analogRead(A2));
+        buffer = analogRead(A2);
+        if (buffer < 1000 && buffer >= 100) {
+          Serial.print("0");
+        } else if (buffer < 100 && buffer >= 10) {
+          Serial.print("00");
+        } else if (buffer < 10) {
+          Serial.print("000");
+        }
+        Serial.print(buffer);
         delay(50);
       break;
       case 3:
-        Serial.println(analogRead(A3));
+        buffer = analogRead(A3);
+        if (buffer < 1000 && buffer >= 100) {
+          Serial.print("0");
+        } else if (buffer < 100 && buffer >= 10) {
+          Serial.print("00");
+        } else if (buffer < 10) {
+          Serial.print("000");
+        }
+        Serial.print(buffer);
         delay(50);
         break;
       case 4:
-        Serial.println(analogRead(A4));
+        buffer = analogRead(A4);
+        if (buffer < 1000 && buffer >= 100) {
+          Serial.print("0");
+        } else if (buffer < 100 && buffer >= 10) {
+          Serial.print("00");
+        } else if (buffer < 10) {
+          Serial.print("000");
+        }
+        Serial.print(buffer);
         delay(50);
         break;
       case 5:
-        Serial.println(analogRead(A5));
+        buffer = analogRead(A5);
+        if (buffer < 1000 && buffer >= 100) {
+          Serial.print("0");
+        } else if (buffer < 100 && buffer >= 10) {
+          Serial.print("00");
+        } else if (buffer < 10) {
+          Serial.print("000");
+        }
+        Serial.print(buffer);
         delay(50);
         break;
+    }
+    for (int i = 0; i < 4; i++) {
+      Serial.print("\b");
     }
 
     if (Serial.available()) {
       char chr = Serial.read();
 
       if (chr == 'b') { // Exits if b is sent
+        ReturnToline();
         exitloop = true;
       }
     }
@@ -534,15 +600,20 @@ void DHT11() {
     }
     Serial.print("Temp : ");
     Serial.print(DHT.temperature);
-    Serial.println(" C ");
-    Serial.print("Humid : ");
+    Serial.print(" C /");
+    Serial.print(" Humid : ");
     Serial.print(DHT.humidity);
-    Serial.println(" % ");
+    Serial.print(" % ");
+    delay(100);
+    for (int i = 0; i < 27; i++) {
+      Serial.print("\b");
+    }
 
     if (Serial.available()) { 
       chr = Serial.read();
 
       if (chr == 'b') {
+        ReturnToline();
         exitloop = true;
       }
     }
@@ -558,13 +629,13 @@ int PinSelect(int MaxDigits) {
   char chr = 0;
   int Pin = 0;
   int c = 0; // Digits Counter
-  Serial.print("Which Pin? ");
+  Serial.println("Which Pin? ");
   switch(MaxDigits) {
     case 1:
-      Serial.println("0-9 : ");
+      Serial.print("0-9 : ");
     break;
     case 2:
-      Serial.println("0-99 : ");
+      Serial.print("0-99 : ");
     break;
   }
   while (!Resume) {
@@ -633,11 +704,22 @@ void runUltraR() {
     cm = ms2cm(duration);
 
     if (cm < 400 && cm > 4) {
+      if (cm < 100 && cm > 10) {
+        Serial.print("0");
+      } else if (cm < 10) {
+        Serial.print("00");
+      }
       Serial.print(cm);
       Serial.print("cm");
+      for (int i = 0; i < 5; i++) {
+      Serial.print("\b");
+    }
     } else {
-      Serial.println("Out Of Range!");
+      Serial.print("Out Of Range!");
       delay(500);
+      for (int i = 0; i < 13; i++) {
+      Serial.print("\b \b");
+    }
     }
 
     delay(100);
@@ -646,6 +728,7 @@ void runUltraR() {
       char chr = Serial.read();
 
       if (chr == 'b') {
+        ReturnToline();
         exitloop = true;
       }
 

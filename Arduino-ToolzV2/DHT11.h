@@ -1,5 +1,5 @@
-#ifndef DFROBOT_DHT11_h
-#define DFROBOT_DHT11_h
+#ifndef DHT11_h
+#define DHT11_h
 
 #if defined(ARDUINO) && (ARDUINO >= 100)
 #include <Arduino.h>
