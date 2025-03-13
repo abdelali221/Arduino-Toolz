@@ -74,6 +74,7 @@ void CommandSet() {
   
   char command[20]; // Array to store the command
   StringRead(command, sizeof(command)); // Read the incoming data
+  ReturnToline();
 
     // Compares the data to the available commands :
   if (strcmp(command, "Analog") == 0) {
@@ -154,7 +155,7 @@ void DigitalTool() {
 
   int ReadWrite_Switch = 0;
   char chr = 0;
-  int Pin = PinSelect(2); // Pin Variable for Analog/Digital Tools
+  int Pin = PinSelect(2, 13); // Pin Variable for Analog/Digital Tools
 
   if (Pin == -1) {
     Serial.println("Canceled.");
@@ -264,7 +265,7 @@ void DigitalTool() {
 
 void AnalogTool() {
 
-  int Pin = PinSelect(1); // Pin Variable for Analog/Digital Tools
+  int Pin = PinSelect(1, 5); // Pin Variable for Analog/Digital Tools
   int buffer;
   
   if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid or the user canceled the operation
@@ -393,77 +394,63 @@ void runEEPROM() {
   ReturnToline();
   delay(2000);
   noexitloop();
-  Serial.println(" Read or Write?");
-  Serial.print("R=0  W=1 : ");
+  Serial.println(" Read or Write or Clear?");
+  Serial.print("R=0  W=1  C=2 : ");
 
-  while (!Resume) {
+  while (!Resume) { // Select the format
     if (Serial.available()) {
       Resume = true;
-      ReadWrite_Switch = Serial.read() - 48;
-      Serial.println(ReadWrite_Switch); // Already explained in Digital
+      ReadWrite_Switch = Serial.read() - 48; 
+      Serial.println(ReadWrite_Switch);
       delay(500);
+    }
+  }
 
-        if (ReadWrite_Switch == 1) {
+  if (ReadWrite_Switch < 0 || ReadWrite_Switch > 2) { // Already explained in Digital/Analog
+    Serial.println(" Invalid Choice!");
+    delay(1000);
+    return;
+  }
 
-          noexitloop();
-          Serial.println("Clear or Write?");
-          Serial.print("C=2  W=1 : ");
+  noexitloop();
 
-          while (!Resume) {
-            if (Serial.available()) {
-              Resume = true;
-              ReadWrite_Switch = Serial.read() - 48;
-              Serial.println(ReadWrite_Switch);
-              delay(500);
-            }
-          }
-        }
-      }
+  if (ReadWrite_Switch == 0) {
+    Serial.println("INT, HEX or BIN?  ");
+    Serial.print(" I=0  H=1  B=2 : ");
 
-      if (ReadWrite_Switch < 0 || ReadWrite_Switch > 2) { // Already explained in Digital/Analog
-        Serial.println(" Invalid Choice!");
-        delay(1000);
-        return;
+    while (!Resume) { // Select the format
+      if (Serial.available()) {
+        Resume = true;
+        EVF = Serial.read() - 48; 
+        Serial.println(EVF);
+        delay(500);
       }
     }
+  }
+  
+  if (EVF < 0 || EVF > 2) { // Already explained in Digital/Analog
+    Serial.println(" Invalid Choice!");
+    delay(1000);
+    return;
+  }
+  
+  noexitloop();
 
-    noexitloop();
-
-    if (ReadWrite_Switch == 0) {
-
-      Serial.println("INT, HEX or BIN?  ");
-      Serial.print(" I=0  H=1  B=2 : ");
-
-      while (!Resume) { // Select the format
-        if (Serial.available()) {
-          Resume = true;
-          EVF = Serial.read() - 48; 
-          Serial.println(EVF);
-          delay(500);
-        }
-      }
-    }
-    if (EVF < 0 || EVF > 2) { // Already explained in Digital/Analog
-      Serial.println(" Invalid Choice!");
-      delay(1000);
+  if (ReadWrite_Switch != 2) {
+    c = 0;
+      // Reads the Address
+    address = AddrSelect(EEPROM.length());
+    if (address == -1) {
+      Serial.println("Canceled.");
       return;
     }
-    noexitloop();
-
-    if (ReadWrite_Switch != 2) {
-      c = 0;
-        // Reads the Address
-      address = AddrSelect();
-      if (address == -1) {
-        Serial.println("Canceled.");
-        return;
-      }
-    }
-    if (address > EEPROM.length()) { // Compares the address to the EEPROM length
-      Serial.println("Invalid Address!");
-      delay(3000);
-      return;
-    }
+  }
+  
+  if (address > EEPROM.length()) { // Compares the address to the EEPROM length
+    Serial.println("Invalid Address!");
+    delay(3000);
+    return;
+  }
 
   noexitloop();
 
@@ -493,31 +480,7 @@ void runEEPROM() {
 
     case 1: // Write
 
-      Serial.print("What value? 0-255");
-
-      while (!Resume) {
-        if (Serial.available()) {
-
-          chr = Serial.read();
-          Serial.print(chr);
-
-          if (chr == NL || chr == CR) {
-            ReturnToline();
-            Resume = true;
-          }
-
-          else {
-
-            if (c != 0 && chr != '0') {
-              c++;
-            }
-
-            if (c < 4) {
-              value = value * 10 + chr - 48;
-            }
-          }
-        }
-      }
+    value = ValSelect(255);
 
       if (value < 0 || value > 255) {
         Serial.println("Invalid Value!");
@@ -541,7 +504,7 @@ void runEEPROM() {
     break;
 
     case 2:
-      for (int i = 0; i < EEPROM.length(); i++) {
+      for (int i = 0; i <= EEPROM.length(); i++) {
         EEPROM.write(i, 0);
         Serial.print("Address : ");
         Serial.println(i);
@@ -625,19 +588,15 @@ void ReturnToline() {
   Serial.write(NL);
 }
 
-int PinSelect(int MaxDigits) {
+int PinSelect(int MaxDigits, int MaxValue) {
   char chr = 0;
   int Pin = 0;
   int c = 0; // Digits Counter
   Serial.println("Which Pin? ");
-  switch(MaxDigits) {
-    case 1:
-      Serial.print("0-9 : ");
-    break;
-    case 2:
-      Serial.print("0-99 : ");
-    break;
-  }
+  Serial.print("0-");
+  Serial.print(MaxValue);
+  Serial.print(" : ");
+
   while (!Resume) {
     if (Serial.available()) {
       chr = Serial.read();
@@ -674,7 +633,7 @@ int PinSelect(int MaxDigits) {
 
 void runUltraR() {
 
-  int Pin = PinSelect(2);
+  int Pin = PinSelect(2, 13);
 
   if (Pin < 0 || Pin > 12) {
     if (Pin == -1) {
@@ -704,7 +663,7 @@ void runUltraR() {
     cm = ms2cm(duration);
 
     if (cm < 400 && cm > 4) {
-      if (cm < 100 && cm > 10) {
+      if (cm < 100 && cm >= 10) {
         Serial.print("0");
       } else if (cm < 10) {
         Serial.print("00");
@@ -742,11 +701,14 @@ long ms2cm(long microseconds) {
   return microseconds / 29 / 2;
 }
 
-int AddrSelect() {
+int AddrSelect(int MaxValue) {
   char chr = 0;
   int Addr = 0;
   int c = 0; // Char Counter
-  Serial.print("Which Address? ");
+  Serial.println("Which Address? ");
+  Serial.print("0-");
+  Serial.print(MaxValue);
+  Serial.print(" : ");
 
   while (!Resume) {
     if (Serial.available()) {
@@ -776,6 +738,38 @@ int AddrSelect() {
             Addr = (Addr * 10) + chr - 48;
             Serial.print(Addr);
           }
+        }
+      }
+    }
+  }
+}
+
+int ValSelect(int MaxValue) {
+
+  int value = 0;
+  int c = 0;
+  
+  Serial.println("What value?");
+  Serial.print("0-");
+  Serial.print(MaxValue);
+  Serial.print(" : ");
+
+  while (!exitloop) {
+    if (Serial.available()) {
+
+      char chr = Serial.read();
+      Serial.print(chr);
+
+      if (chr == NL || chr == CR) {
+        ReturnToline();
+        exitloop = true;
+        return value;
+      } else {
+        if (c != 0 && chr != '0') {
+         c++;
+        }
+        if (c < 4) {
+          value = value * 10 + chr - 48;
         }
       }
     }
