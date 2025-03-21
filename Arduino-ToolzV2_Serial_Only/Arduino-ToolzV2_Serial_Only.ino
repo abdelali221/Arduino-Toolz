@@ -1,3 +1,6 @@
+//  Arduino Toolz
+// Written by Abdelali221
+
 #include <EEPROM.h>
 #include <Wire.h>
 #include "DHT11.h"
@@ -33,7 +36,7 @@ const char* welcome[] =
   " Proudly developped by Abdelali221",
   " Ver 2.1 (New Release/Entirely rewritten)",
   " Github : https://github.com/abdelali221/",
-  " There is a list of the commands :",
+  " This is all the available commands :",
   "\0"
 }; // Welcome Text
 
@@ -47,8 +50,6 @@ const char* DHTtext[] =
   "\0"
 };
 
-// Variables 
-int c = 0;
 // Booleans
 bool exitloop = false;
 bool Resume = false;
@@ -56,8 +57,8 @@ bool Resume = false;
 void setup() {
     // Initialization sequence
   Serial.begin(9600); // Serial begin at 9600bps
-  Serial.write(ESC); // ESC command (Required to send the Clear Screen instruction)
-  Serial.print("[2J"); // Clear the terminal
+  ClearScreen();
+
     // Welcome Screen :
   serialwelcome(); 
   Serial.print("$>"); // For the Shell
@@ -82,8 +83,7 @@ void CommandSet() {
   } else if (strcmp(command, "Bell") == 0) {
     Serial.write(BELL);
   } else if (strcmp(command, "Cls") == 0) {
-    Serial.write(ESC);
-    Serial.print("[2J");
+    ClearScreen();
   } else if (strcmp(command, "DHT11") == 0) {
     DHT11();
   } else if (strcmp(command, "Digital") == 0) {
@@ -99,6 +99,7 @@ void CommandSet() {
   } else {
     Serial.println("Invalid command!");
   }
+  ReturnToline();
   Serial.print("$>");
 }
 
@@ -156,6 +157,8 @@ void DigitalTool() {
   int ReadWrite_Switch = 0;
   char chr = 0;
   int Pin = PinSelect(2, 13); // Pin Variable for Analog/Digital Tools
+  int read;
+  int ANSread = 2;
 
   if (Pin == -1) {
     Serial.println("Canceled.");
@@ -170,7 +173,7 @@ void DigitalTool() {
 
   noexitloop();
   Serial.println("Read or Write?  ");
-  Serial.print("R=0  W=1 : ");
+  Serial.print("R=0  W=1: ");
 
   while (!Resume) {
     if (Serial.available()) {
@@ -204,10 +207,15 @@ void DigitalTool() {
       while (!exitloop) {
 
         pinMode(Pin, INPUT);
-        Serial.print(digitalRead(Pin));
-        for (int i = 0; i < 1; i++) {
-          Serial.print("\b");
+        read = digitalRead(Pin);
+        
+        if (read != ANSread) {
+          Serial.print(read);
+          for (int i = 0; i < 1; i++) {
+            Serial.print("\b");
+          }
         }
+        ANSread = read;
 
         if (Serial.available()) {
           chr = Serial.read();
@@ -240,7 +248,7 @@ void DigitalTool() {
             Serial.print("LOW ");
             digitalWrite(Pin, LOW);
             for (int i = 0; i < 4; i++) {
-              Serial.print("\b");
+              Serial.print("\b \b");
             }
           break;
 
@@ -248,7 +256,7 @@ void DigitalTool() {
             Serial.print("HIGH");
             digitalWrite(Pin, HIGH);
             for (int i = 0; i < 4; i++) {
-              Serial.print("\b");
+              Serial.print("\b \b");
             }
           break;
 
@@ -257,6 +265,8 @@ void DigitalTool() {
             exitloop = true;
           break;
         }
+
+        chr = 2;
         
       }
     break;
@@ -280,6 +290,7 @@ void AnalogTool() {
   }
 
   noexitloop();
+  int APIN = Pin + 14;
   Serial.println("Press b To exit");
   Serial.print("PIN A");
   Serial.print(Pin);
@@ -287,80 +298,16 @@ void AnalogTool() {
   
   while (!exitloop) {
       
-    switch (Pin) { // Checks what Pin was selected
-      case 0:
-        buffer = analogRead(A0);
-        if (buffer < 1000 && buffer >= 100) {
-          Serial.print("0");
-        } else if (buffer < 100 && buffer >= 10) {
-          Serial.print("00");
-        } else if (buffer < 10) {
-          Serial.print("000");
-        }
-        Serial.print(buffer);
-        delay(50);
-        break;
-      case 1:
-      buffer = analogRead(A1);
-        if (buffer < 1000 && buffer >= 100) {
-          Serial.print("0");
-        } else if (buffer < 100 && buffer >= 10) {
-          Serial.print("00");
-        } else if (buffer < 10) {
-          Serial.print("000");
-        }
-        Serial.print(buffer);
-        delay(50);
-        break;
-      case 2:
-        buffer = analogRead(A2);
-        if (buffer < 1000 && buffer >= 100) {
-          Serial.print("0");
-        } else if (buffer < 100 && buffer >= 10) {
-          Serial.print("00");
-        } else if (buffer < 10) {
-          Serial.print("000");
-        }
-        Serial.print(buffer);
-        delay(50);
-      break;
-      case 3:
-        buffer = analogRead(A3);
-        if (buffer < 1000 && buffer >= 100) {
-          Serial.print("0");
-        } else if (buffer < 100 && buffer >= 10) {
-          Serial.print("00");
-        } else if (buffer < 10) {
-          Serial.print("000");
-        }
-        Serial.print(buffer);
-        delay(50);
-        break;
-      case 4:
-        buffer = analogRead(A4);
-        if (buffer < 1000 && buffer >= 100) {
-          Serial.print("0");
-        } else if (buffer < 100 && buffer >= 10) {
-          Serial.print("00");
-        } else if (buffer < 10) {
-          Serial.print("000");
-        }
-        Serial.print(buffer);
-        delay(50);
-        break;
-      case 5:
-        buffer = analogRead(A5);
-        if (buffer < 1000 && buffer >= 100) {
-          Serial.print("0");
-        } else if (buffer < 100 && buffer >= 10) {
-          Serial.print("00");
-        } else if (buffer < 10) {
-          Serial.print("000");
-        }
-        Serial.print(buffer);
-        delay(50);
-        break;
+    buffer = analogRead(APIN);
+    if (buffer < 1000 && buffer >= 100) {
+    Serial.print("0");
+    } else if (buffer < 100 && buffer >= 10) {
+      Serial.print("00");
+    } else if (buffer < 10) {
+      Serial.print("000");
     }
+    Serial.print(buffer);
+    delay(50);
     for (int i = 0; i < 4; i++) {
       Serial.print("\b");
     }
@@ -384,11 +331,9 @@ void noexitloop() {
 void runEEPROM() {
 
   int ReadWrite_Switch = 0;
-  int c = 0;
   int value = 0; // EEPROM Read/Write
   int address = 0; // EEPROM Address
   int EVF = 0; // EEPROM Value Format Switch
-  char chr = 0;
 
   Serial.println("  EEPROM Tool");
   ReturnToline();
@@ -437,7 +382,6 @@ void runEEPROM() {
   noexitloop();
 
   if (ReadWrite_Switch != 2) {
-    c = 0;
       // Reads the Address
     address = AddrSelect(EEPROM.length());
     if (address == -1) {
@@ -567,10 +511,7 @@ void DHT11() {
     Serial.print(" Humid : ");
     Serial.print(DHT.humidity);
     Serial.print(" % ");
-    delay(100);
-    for (int i = 0; i < 27; i++) {
-      Serial.print("\b");
-    }
+    Serial.write(CR);
 
     if (Serial.available()) { 
       chr = Serial.read();
@@ -603,7 +544,7 @@ int PinSelect(int MaxDigits, int MaxValue) {
       if (chr == NL || chr == CR) {
         if (c > 0) {
           ReturnToline();
-          return Pin;
+          Resume = true;
         }
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
           if(c > 0){
@@ -629,6 +570,7 @@ int PinSelect(int MaxDigits, int MaxValue) {
       }
     }
   }
+  return Pin;
 }
 
 void runUltraR() {
@@ -716,7 +658,7 @@ int AddrSelect(int MaxValue) {
       if (chr == NL || chr == CR) {
         if (c > 0) {
           ReturnToline();
-          return Addr;
+          Resume = true;
         }
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
           if(c > 0){
@@ -742,6 +684,8 @@ int AddrSelect(int MaxValue) {
       }
     }
   }
+  noexitloop();
+  return Addr;
 }
 
 int ValSelect(int MaxValue) {
@@ -763,7 +707,6 @@ int ValSelect(int MaxValue) {
       if (chr == NL || chr == CR) {
         ReturnToline();
         exitloop = true;
-        return value;
       } else {
         if (c != 0 && chr != '0') {
          c++;
@@ -774,4 +717,13 @@ int ValSelect(int MaxValue) {
       }
     }
   }
+  noexitloop();
+  return value;
+}
+
+void ClearScreen() {
+  Serial.write(ESC); // ESC command (Required to send the Clear Screen instruction)
+  Serial.print("[2J"); // Clears the Terminal
+  Serial.write(ESC); // ESC command (Required to send the Clear Screen instruction)
+  Serial.print("[0;0f"); // Sets the Cursor to 0;0
 }
