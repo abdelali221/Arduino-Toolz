@@ -6,7 +6,7 @@
  - Clock (Not available on V2)
  - Terminal
  - Analog/Digital PIN Tools
- - Module Testers (IR/UltraSonic/DHT11/Keypad) (Some are not available on V2, and or broken on V1)
+ - Module Testers (IR/UltraSonic/DHT11/Keypad) (Some are not available on V2, and/or broken on V1)
  - EEPROM Tool
  - Hot-Plug a LCD Display
 
