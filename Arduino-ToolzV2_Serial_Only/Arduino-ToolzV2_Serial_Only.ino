@@ -34,7 +34,7 @@ const char* welcome[] =
 
 { "// Arduino Toolz",
   " Proudly developped by Abdelali221",
-  " Ver 2.1 (New Release/Entirely rewritten)",
+  " Ver 2.1",
   " Github : https://github.com/abdelali221/",
   " This is all the available commands :",
   "\0"
