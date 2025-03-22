@@ -235,6 +235,7 @@ void DigitalTool() {
       Serial.print("PIN D");
       Serial.print(Pin);
       Serial.print(" : ");
+      Serial.print("LOW ");
       
       
       while (!exitloop) {
@@ -245,19 +246,19 @@ void DigitalTool() {
                 
         switch (chr) {
           case '0':
-            Serial.print("LOW ");
-            digitalWrite(Pin, LOW);
             for (int i = 0; i < 4; i++) {
               Serial.print("\b \b");
             }
+            Serial.print("LOW ");
+            digitalWrite(Pin, LOW);
           break;
 
           case '1':
-            Serial.print("HIGH");
-            digitalWrite(Pin, HIGH);
             for (int i = 0; i < 4; i++) {
               Serial.print("\b \b");
             }
+            Serial.print("HIGH");
+            digitalWrite(Pin, HIGH);
           break;
 
           case 'b':
