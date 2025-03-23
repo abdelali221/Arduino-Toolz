@@ -211,9 +211,6 @@ void DigitalTool() {
         
         if (read != ANSread) {
           Serial.print(read);
-          for (int i = 0; i < 1; i++) {
-            Serial.print("\b");
-          }
         }
         ANSread = read;
 
