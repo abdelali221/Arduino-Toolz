@@ -50,6 +50,13 @@ const char* DHTtext[] =
   "\0"
 };
 
+const char* valSelect[] = 
+
+{ "Value",
+  "Pin",
+  "Address"
+};
+
 // Booleans
 bool exitloop = false;
 bool Resume = false;
@@ -156,7 +163,7 @@ void DigitalTool() {
 
   int ReadWrite_Switch = 0;
   char chr = 0;
-  int Pin = PinSelect(2, 13); // Pin Variable for Analog/Digital Tools
+  int Pin = ValSelect(13, 1); // Pin Variable for Analog/Digital Tools
   int read;
   int ANSread = 2;
 
@@ -273,7 +280,7 @@ void DigitalTool() {
 
 void AnalogTool() {
 
-  int Pin = PinSelect(1, 5); // Pin Variable for Analog/Digital Tools
+  int Pin = ValSelect(5, 1); // Pin Variable for Analog/Digital Tools
   int buffer;
   
   if (Pin < 0 || Pin > 5) { // Checks if the Pin number is valid or the user canceled the operation
@@ -337,7 +344,7 @@ void runEEPROM() {
   ReturnToline();
   delay(2000);
   noexitloop();
-  Serial.println(" Read or Write or Clear?");
+  Serial.println(" Read, Write or Clear?");
   Serial.print("R=0  W=1  C=2 : ");
 
   while (!Resume) { // Select the format
@@ -381,7 +388,7 @@ void runEEPROM() {
 
   if (ReadWrite_Switch != 2) {
       // Reads the Address
-    address = AddrSelect(EEPROM.length());
+    address = ValSelect(EEPROM.length(), 2);
     if (address == -1) {
       Serial.println("Canceled.");
       return;
@@ -422,7 +429,7 @@ void runEEPROM() {
 
     case 1: // Write
 
-    value = ValSelect(255);
+    value = ValSelect(255, 0);
 
       if (value < 0 || value > 255) {
         Serial.println("Invalid Value!");
@@ -527,53 +534,9 @@ void ReturnToline() {
   Serial.write(NL);
 }
 
-int PinSelect(int MaxDigits, int MaxValue) {
-  char chr = 0;
-  int Pin = 0;
-  int c = 0; // Digits Counter
-  Serial.println("Which Pin? ");
-  Serial.print("0-");
-  Serial.print(MaxValue);
-  Serial.print(" : ");
-
-  while (!Resume) {
-    if (Serial.available()) {
-      chr = Serial.read();
-      if (chr == NL || chr == CR) {
-        if (c > 0) {
-          ReturnToline();
-          Resume = true;
-        }
-      } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
-          if(c > 0){
-            for (int i = 0; i < c; i++) {
-              Serial.print("\b \b");
-            }
-            c = 0;
-            Pin = 0;
-          }
-      } else if (chr == 'b') {
-        return Pin = -1;
-      } else {
-        if (chr >= '0' && chr <= '9') {
-          if (c < MaxDigits) {
-            for (int i = 0; i < c; i++) {
-              Serial.print("\b \b");
-            }
-            c++;
-            Pin = (Pin * 10) + chr - 48;
-            Serial.print(Pin);
-          }
-        }
-      }
-    }
-  }
-  return Pin;
-}
-
 void runUltraR() {
 
-  int Pin = PinSelect(2, 13);
+  int Pin = ValSelect(13, 1);
 
   if (Pin < 0 || Pin > 12) {
     if (Pin == -1) {
@@ -641,57 +604,13 @@ long ms2cm(long microseconds) {
   return microseconds / 29 / 2;
 }
 
-int AddrSelect(int MaxValue) {
-  char chr = 0;
-  int Addr = 0;
-  int c = 0; // Char Counter
-  Serial.println("Which Address? ");
-  Serial.print("0-");
-  Serial.print(MaxValue);
-  Serial.print(" : ");
-
-  while (!Resume) {
-    if (Serial.available()) {
-      chr = Serial.read();
-      if (chr == NL || chr == CR) {
-        if (c > 0) {
-          ReturnToline();
-          Resume = true;
-        }
-      } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
-          if(c > 0){
-            for (int i = 0; i < c; i++) {
-              Serial.print("\b \b");
-            }
-            c = 0;
-            Addr = 0;
-          }
-      } else if (chr == 'b') {
-        return Addr = -1;
-      } else {
-        if (chr >= '0' && chr <= '9') {
-          if (c < 4) {
-            for (int i = 0; i < c; i++) {
-              Serial.print("\b \b");
-            }
-            c++;
-            Addr = (Addr * 10) + chr - 48;
-            Serial.print(Addr);
-          }
-        }
-      }
-    }
-  }
-  noexitloop();
-  return Addr;
-}
-
-int ValSelect(int MaxValue) {
+int ValSelect(int MaxValue, int i) {
 
   int value = 0;
   int c = 0;
   
-  Serial.println("What value?");
+  Serial.print("Please Enter The ");
+  Serial.println(valSelect[i]);
   Serial.print("0-");
   Serial.print(MaxValue);
   Serial.print(" : ");
@@ -700,17 +619,26 @@ int ValSelect(int MaxValue) {
     if (Serial.available()) {
 
       char chr = Serial.read();
-      Serial.print(chr);
 
       if (chr == NL || chr == CR) {
         ReturnToline();
         exitloop = true;
-      } else {
-        if (c != 0 && chr != '0') {
-         c++;
+      } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
+        for (int i = 0; i < c; i++) {
+          Serial.print("\b \b");
         }
-        if (c < 4) {
-          value = value * 10 + chr - 48;
+        c = 0;
+        value = 0;
+      } else {
+        if (chr >= '0' && chr <= '9') {
+          if (c < 4) {
+            for (int i = 0; i < c; i++) {
+              Serial.print("\b \b");
+            }
+            c++;
+            value = (value * 10) + chr - 48;
+            Serial.print(value);
+          }
         }
       }
     }
