@@ -1,6 +1,6 @@
 /*
   Abdelali211's DHT11 driver
-  based on DFRobot project
+  based on DFRobot's project
 */
 
 #include "DHT11.h"
@@ -46,32 +46,31 @@ void DHT11::readata(int pin) {
     return;
   }
 	for(int i = 0; i < 40; i++) {
-
 		loopCounter = 10000;
 
-  if (digitalRead(pin) == LOW) {
-		while(digitalRead(pin) == LOW) {
-			if(loopCounter-- == 0){
-				break;
-			}
-		}
-  } else {
-    humidity = -2;
-    return;
-  }
-    unsigned long t = micros();
-  if (digitalRead(pin) == HIGH) {
-    while(digitalRead(pin) == HIGH) {
-      if(loopCounter-- == 0){
-			  break;
+    if (digitalRead(pin) == LOW) {
+		  while(digitalRead(pin) == LOW) {
+		  	if(loopCounter-- == 0){
+		  		break;
+		  	}
 		  }
+    } else {
+      humidity = -2;
+      return;
     }
-	} else {
-    humidity = -1;
-    return;
-  }
+    unsigned long t = micros();
+    if (digitalRead(pin) == HIGH) {
+      while(digitalRead(pin) == HIGH) {
+        if(loopCounter-- == 0){
+		   	  break;
+		    }
+      }
+	  } else {
+      humidity = -1;
+      return;
+    }
   
-  if ((micros() - t) > 50) bits[idx] |= (1 << counter);
+    if ((micros() - t) > 50) bits[idx] |= (1 << counter);
 
     if (counter == 0) {
       counter = 7;   

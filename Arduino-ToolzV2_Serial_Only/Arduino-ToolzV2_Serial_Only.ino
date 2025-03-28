@@ -2,12 +2,12 @@
 // Written by Abdelali221
 
 #include <EEPROM.h>
-#include <Wire.h>
 #include "DHT11.h"
-#include <string.h>
+
+#define DHT11_PIN 4
 
 DHT11 DHT;
-#define DHT11_PIN 4
+
 // Constants
 const int BACK_SPACE = 127;
 const int BACK_SPACE_ALT = 8;
@@ -16,17 +16,17 @@ const int CR = 13; // Carriage Return command
 const int ESC = 27;
 const int BELL = 7;
 
-
 const char* commandlist[] = 
 
-{ " Analog",
-  " Cls",
-  " DHT11",
-  " Digital",
-  " EEPROM",
-  " Help",
-  " Intro",
-  " UltraR",
+{ "Analog",
+  "Cls",
+  "DHT11",
+  "Digital",
+  "EEPROM",
+  "Help",
+  "Intro",
+  "Tone",
+  "UltraR",
   "\0"
 }; // Command list
 
@@ -36,7 +36,6 @@ const char* welcome[] =
   " Proudly developped by Abdelali221",
   " Ver 2.1",
   " Github : https://github.com/abdelali221/",
-  " This is all the available commands :",
   "\0"
 }; // Welcome Text
 
@@ -52,9 +51,10 @@ const char* DHTtext[] =
 
 const char* valSelect[] = 
 
-{ "Value",
-  "Pin",
-  "Address"
+{ "Desired Value",
+  "Pin Number",
+  "Desired Address",
+  "Desired Frequency"
 };
 
 // Booleans
@@ -67,13 +67,13 @@ void setup() {
   ClearScreen();
 
     // Welcome Screen :
-  serialwelcome(); 
-  Serial.print("$>"); // For the Shell
+  serialwelcome();
+  Serial.print("$>"); // Shell indicator
 }
 
 void loop() {
   if (Serial.available()) { // Wait for incoming data
-    noexitloop(); // Sets all System booleans for loop and wait to false
+    noexitloop(); // Sets all booleans for loop and wait to false
     CommandSet(); // Recieve and manage the data
   }
 }
@@ -101,6 +101,8 @@ void CommandSet() {
     runHelp();
   } else if (strcmp(command, "Intro") == 0) {
     serialwelcome();
+  } else if (strcmp(command, "Tone") == 0) {
+    runTone();
   } else if (strcmp(command, "UltraR") == 0) {
     runUltraR();
   } else {
@@ -145,6 +147,7 @@ void runHelp() {
 
   for(int i = 0; i < sizeof(commandlist) / sizeof(commandlist[0]); i++){
     ReturnToline();
+    Serial.print(" ");
     Serial.print(commandlist[i]);
   }
 
@@ -171,7 +174,7 @@ void DigitalTool() {
     Serial.println("Canceled.");
     return;
   }
-    
+
   if (Pin < 0 || Pin > 13) { // Checks if the Pin number is valid
     Serial.println("   Invalid PIN number!");
     delay(1000);
@@ -189,7 +192,7 @@ void DigitalTool() {
       Serial.println(ReadWrite_Switch); // Print the selected instruction
       delay(500);
     }
-  } 
+  }
 
   if (ReadWrite_Switch < 0 || ReadWrite_Switch > 1) { // Checks if the value is valid
     Serial.println(" Invalid Choice!");
@@ -210,7 +213,7 @@ void DigitalTool() {
       Serial.print("PIN D");
       Serial.print(Pin);
       Serial.print(" : ");
-            
+
       while (!exitloop) {
 
         pinMode(Pin, INPUT);
@@ -276,7 +279,7 @@ void DigitalTool() {
       }
     break;
   }
-}  
+}
 
 void AnalogTool() {
 
@@ -328,11 +331,6 @@ void AnalogTool() {
   }
 }
 
-void noexitloop() {
-  exitloop = false; // Init the Stay in loop
-  Resume = false; // Init the Wait For action
-}
-
 void runEEPROM() {
 
   int ReadWrite_Switch = 0;
@@ -377,13 +375,13 @@ void runEEPROM() {
       }
     }
   }
-  
+
   if (EVF < 0 || EVF > 2) { // Already explained in Digital/Analog
     Serial.println(" Invalid Choice!");
     delay(1000);
     return;
   }
-  
+
   noexitloop();
 
   if (ReadWrite_Switch != 2) {
@@ -394,7 +392,7 @@ void runEEPROM() {
       return;
     }
   }
-  
+
   if (address > EEPROM.length()) { // Compares the address to the EEPROM length
     Serial.println("Invalid Address!");
     delay(3000);
@@ -412,7 +410,7 @@ void runEEPROM() {
       Serial.print(" is ");
       
       switch (EVF) {
-        case 0:          
+        case 0:
           Serial.println(value);
         break;
 
@@ -453,10 +451,30 @@ void runEEPROM() {
     break;
 
     case 2:
+
+      ClearScreen();
+      Serial.println("THIS OPERATION WILL ERASE ANY DATA LOCATED ON THE EEPROM");
+      ReturnToline();
+      Serial.print("Do you want to proceed? Y/N : ");
+
+      while (!exitloop) {
+        if (Serial.available()) {
+          char chr = Serial.read();
+
+          if (chr == 'y' || chr == 'Y') {
+            Serial.println("Y");
+            exitloop = true;
+          } else if (chr == 'n' || chr == 'N') {
+            Serial.println("N");
+            return;
+          }
+        }
+      }
       for (int i = 0; i <= EEPROM.length(); i++) {
         EEPROM.write(i, 0);
         Serial.print("Address : ");
-        Serial.println(i);
+        Serial.print(i);
+        Serial.write(CR);
         if (EEPROM.read(i) != 0) {
           Serial.println("ERROR!");
           delay(500);
@@ -529,10 +547,41 @@ void DHT11() {
   }
 }
 
-void ReturnToline() {
-  Serial.write(CR);
-  Serial.write(NL);
+void runTone() {
+  ClearScreen();
+  Serial.println("Tone Generator");
+  delay(2000);
+  ReturnToline();
+  int Pin = ValSelect(13, 1);
+  ReturnToline();
+  Serial.print(" Press Enter To Continue...");
+  while (!exitloop) {
+
+    if (Serial.available()) {
+      noTone(Pin);
+      char chr = Serial.read();
+
+      if (chr == NL || chr == CR) {
+        ClearScreen();
+        int Freq = ValSelect(15000, 3);
+        chr = 0;
+        ReturnToline();
+        Serial.print("Frequency : ");
+        if (Freq < 100) {
+          Serial.print("000");
+        } else if (Freq < 1000) {
+          Serial.print("00");
+        } else if (Freq < 10000) {
+          Serial.print("0");
+        }
+        Serial.print(Freq);
+        Serial.print(" Hz");
+        tone(Pin, Freq);
+      }      
+    }
+  }
 }
+
 
 void runUltraR() {
 
@@ -574,14 +623,14 @@ void runUltraR() {
       Serial.print(cm);
       Serial.print("cm");
       for (int i = 0; i < 5; i++) {
-      Serial.print("\b");
-    }
+        Serial.print("\b");
+      }
     } else {
       Serial.print("Out Of Range!");
       delay(500);
       for (int i = 0; i < 13; i++) {
-      Serial.print("\b \b");
-    }
+        Serial.print("\b \b");
+      }
     }
 
     delay(100);
@@ -608,10 +657,10 @@ int ValSelect(int MaxValue, int i) {
 
   int value = 0;
   int c = 0;
-  
+
   Serial.print("Please Enter The ");
   Serial.println(valSelect[i]);
-  Serial.print("0-");
+  Serial.print("0 - ");
   Serial.print(MaxValue);
   Serial.print(" : ");
 
@@ -625,15 +674,15 @@ int ValSelect(int MaxValue, int i) {
         exitloop = true;
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
         for (int i = 0; i < c; i++) {
-          Serial.print("\b \b");
+          Serial.write(chr);
         }
         c = 0;
         value = 0;
       } else {
         if (chr >= '0' && chr <= '9') {
-          if (c < 4) {
+          if (c < 5) {
             for (int i = 0; i < c; i++) {
-              Serial.print("\b \b");
+              Serial.write(BACK_SPACE);
             }
             c++;
             value = (value * 10) + chr - 48;
@@ -651,5 +700,15 @@ void ClearScreen() {
   Serial.write(ESC); // ESC command (Required to send the Clear Screen instruction)
   Serial.print("[2J"); // Clears the Terminal
   Serial.write(ESC); // ESC command (Required to send the Clear Screen instruction)
-  Serial.print("[0;0f"); // Sets the Cursor to 0;0
+  Serial.print("[1;1f"); // Sets the Cursor to 1;1
+}
+
+void ReturnToline() {
+  Serial.write(CR);
+  Serial.write(NL);
+}
+
+void noexitloop() {
+  exitloop = false; // Init the Stay in loop
+  Resume = false; // Init the Wait For action
 }
