@@ -45,7 +45,7 @@ On V2 otherwise, you'll get this : "$>" on both the lcd screen and the terminal,
  - b 0.9.4 (bug fixes/updated serial system)
  - 1.0 (FIRST RELEASE! ADDED CONTENT/FIXED BUGS/OPTIMIZATION)
  - 2.0 (MAJOR UPDATE : ENTIRELY REWRITTEN/MASSIVE IMPROVEMENTS)
- - 2.1 (added UltraR to V2/changed mind about other functions because of ram limitation/improved user-friendliness)
+ - 2.1 (added UltraR to V2/changed mind about other functions because of Dynamic Memory limitations/improved user-friendliness)
  
 # Notes :
 
