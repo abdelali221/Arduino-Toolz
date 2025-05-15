@@ -3,38 +3,32 @@
 
 # Features :
 
- - Clock (Not available on V2)
- - Terminal
- - Analog/Digital PIN Tools
- - Module Testers (IR/UltraSonic/DHT11/Keypad) (Some are not available on V2, and/or broken on V1)
+ - Terminal (Using the LCD Display if you have one)
+ - Analog/Digital PIN Tools (Will be removed since I'm working on a separate tool) 
+ - Module Testers (IR/UltraSonic/DHT11/Keypad)
  - EEPROM Tool
- - Hot-Plug a LCD Display
 
  # How to Use :
 
 Just upload the Project to your Arduino after downloading the required Libraries, then you'll be done!
 
  REQUIREMENTS :
- - An Arduino (This program was tested with an Arduino UNO)
- - A I2C LCD display (Not required in the Serial-Only version)
+ - An Arduino
+ - A I2C LCD display (Optional)
 
-After uploading the project you should get "Waiting for a command" on the LCD. The program is controllable via Serial with commands. (V1)
-On V2 otherwise, you'll get this : "$>" on both the lcd screen and the terminal, it's the command prompt.
+The program uses commands that are sent using a Terminal (Not the Serial Monitor).
+You should use a software like Putty or Tera Term.
 
 # The commands : 
 
  - Terminal
- - Clock (Not available on V2)
  - Analog
  - Digital
- - IR (Not available on V2)
  - Sensor (DHT11) 
  - UltraR (For the UltraSonic Sensor)
- - Keypad (Not available on V2)
- - LCD (LCD tools) (Not available in V1 and Serial-Only)
+ - LCD (LCD tools)
  - EEPROM (EEPROM tools)
- - Rave (pattern for LCD TEST) (Not available on V1 and Serial-Only)
- - Help
+ - Rave (pattern for LCD TEST)
  
 # Changelog :
 
@@ -46,7 +40,8 @@ On V2 otherwise, you'll get this : "$>" on both the lcd screen and the terminal,
  - 1.0 (FIRST RELEASE!)
  - 2.0 (MAJOR UPDATE : ENTIRELY REWRITTEN/MASSIVE IMPROVEMENTS)
  - 2.1 (added UltraR to V2/changed mind about other functions because of Dynamic Memory limitations/improved user-friendliness)
+ - 2.2 (Major update : Decreased RAM usage to a THIRD of what it used to be/ Fused the Serial-Only with the LCD version)
  
 # Notes :
 
-	DON'T USE THE Arduino-ToolzV1 AS IT'S BUGGY AND DEPRECATED NOW, Use ArduinoToolzV2 instead.
+	DON'T USE THE Arduino-ToolzV1 NOR Arduino-ToolzV2_OLD SINCE THEY ARE BOTH OUTDATED, Use ArduinoToolzV2 instead.
