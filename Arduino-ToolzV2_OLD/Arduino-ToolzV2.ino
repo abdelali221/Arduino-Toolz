@@ -2,19 +2,18 @@
 #include <EEPROM.h>
 #include "DHT11.h"
 #include <string.h>
+#include <ArduinoVT.h>
 
 DHT11 DHT;
+Term Term;
 #define DHT11_PIN 4
 // Constants
-const int BACK_SPACE = 127;
-const int BACK_SPACE_ALT = 8;
-const int NL = 10; // NewLine command
-const int CR = 13; // Carriage Return command
-const int ESC = 27;
-const int LCD_ROWS = 4; // LCD Rows
-const int LCD_COLUMNS = 16; // LCD Columns
-const int LCD_ADDRESS = 0x27; // LCD Address
-const int BELL = 7;
+#define BACK_SPACE 127
+#define BACK_SPACE_ALT 8
+#define LCD_ROWS 4 // LCD Rows
+#define LCD_COLUMNS 16 // LCD Columns
+#define LCD_ADDRESS 0x26 // LCD Address
+#define BELL 7
 
 
 const char* commandlist[] = 
@@ -33,30 +32,20 @@ const char* commandlist[] =
   "\0"
 }; // Command list
 
-const char* welcome[] = 
+const char welcome[] PROGMEM = 
 
-{ "// Arduino Toolz",
-  " Proudly developped by Abdelali221",
-  " Ver 2.1 (New Release/Entirely rewritten)",
-  " Github : https://github.com/abdelali221/",
-  " There is a list of the commands :",
-  "\0"
+{ "// Arduino Toolz \n\c
+  Proudly developped by Abdelali221 \n\c
+  Ver 2.1 (New Release/Entirely rewritten) \n\c
+  Github : https://github.com/abdelali221/ \n\c
+  Here is a list of the commands :"
 }; // Welcome Text
 
-const char* DHTtext[] = 
-
-{ "ERROR! The DHT11 Pin returned invalid data",
-  "Either it's broken or not connected correctly",
-  "ERROR! The DHT11 is not connected",
-  "Plug your DHT11 | VCC to VCC, GND to GND and data to D4",
-  "Once done press Enter",
-  "\0"
-};
 
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
 // Variables 
-int c = 0;
+uint8_t c = 0;
 // Booleans
 bool exitloop = false;
 bool Resume = false;
@@ -64,10 +53,10 @@ bool Resume = false;
 void setup() {
     // Initialization sequence
   Serial.begin(9600); // Serial begin at 9600bps
-  Serial.write(ESC); // ESC command (Required to send the Clear Screen instruction)
-  Serial.print("[2J"); // Clear the terminal
+  Term.Clear(); // Clear the terminal
   lcd.init(); // LCD Screen Init
   lcd.backlight(); // Backlight On
+  lcd.noAutoscroll();
   lcd.clear(); // Clear the screen
     // Welcome Screen :
   serialwelcome(); 
@@ -118,13 +107,14 @@ void CommandSet() {
     runRave();
   } else if (strcmp(command, "Terminal") == 0) {
     runTerminal();
-  } else if (strcmp(command, "UltraR") == 0) {
+  }else if (strcmp(command, "UltraR") == 0) {
     runUltraR();
   } else {
     Serial.println("Invalid command!");
   }
   Serial.print("$>");
   lcd.print("$>");
+  
 }
 
 void StringRead(char* buffer, int maxLength) {
@@ -137,7 +127,7 @@ void StringRead(char* buffer, int maxLength) {
       if (chr == NL || chr == CR) {
         if (c != 0) {
           buffer[c] = '\0'; // Null-terminate the string
-          ReturnToline();
+          Term.Return();
           lcd.clear();
           return;
         }
@@ -168,7 +158,7 @@ void runTerminal() {
 
       if (chr != CR && chr != NL) { // Verify if there is no NL or CR
         if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
-          Serial.print("\b\e[K"); // Clear Screen command
+          Serial.print("\b\e[K"); // BackSpace command
 
           if (c > 0) {
             c--;
@@ -176,23 +166,25 @@ void runTerminal() {
               lcd.setCursor(c, 0);
               lcd.print(" ");
               lcd.setCursor(c, 0);
-            } else {
+            } else if (c < 32) {
               lcd.setCursor(c - 16, 1); // Same but 16 should be omitted from c to have the right Column value
               lcd.print(" ");
               lcd.setCursor(c - 16, 1);
+            } else if (c < 48) {
+              lcd.setCursor(c - 32, 3); // Same but 32 should be omitted from c to have the right Column value
+              lcd.print(" ");
+              lcd.setCursor(c - 32, 3);
             }
           }
         } else { // LCD Cursor position is controlled using the c variable (c for cursor)
           if (c < 16) {
             lcd.setCursor(c, 0);
-          } else if (c > 15) {
-            if (c == 32) { // Clears the LCD screen once it's filled
-              c = 0; // resets c (Cursor)
-              delay(50);
-              lcd.clear();
-            } else {
-              lcd.setCursor(c - 16, 1);
-            }
+          } else if (c > 15 && c < 32) {
+            lcd.setCursor(c - 16, 1);
+          } else if (c > 31 && c < 48) {
+            lcd.setCursor(c - 32, 3);
+          } else if (c > 41 && c < 64) {
+            lcd.setCursor(c - 44, 4);
           }
 
           c++; // Add one each time a character is printed
@@ -200,7 +192,7 @@ void runTerminal() {
           Serial.print(chr); // Echo the char
         }
       } else {
-        ReturnToline();
+        Term.Return();
         c = 0;
         lcd.clear();
       }
@@ -212,15 +204,15 @@ void runTerminal() {
 
 void runHelp() {
   // Print the command list through Serial
-  ReturnToline();
+  Term.Return();
   Serial.print("// Command list :");
 
   for(int i = 0; i < sizeof(commandlist) / sizeof(commandlist[0]); i++){
-    ReturnToline();
+    Term.Return();
     Serial.print(commandlist[i]);
   }
 
-  ReturnToline();
+  Term.Return();
 }
 
 void serialwelcome() {
@@ -438,18 +430,18 @@ void runLCDutility() {
 
   char chr = 0;  
   Serial.print("// LCDutility");
-  ReturnToline();
+  Term.Return();
   Serial.print("What do you want to do?");
-  ReturnToline();
+  Term.Return();
   Serial.print(" 1 - Init the LCD screen. 2 - Turn the Backlight on/off.");
-  ReturnToline();
+  Term.Return();
   Serial.print(" 3 - Enable/Disable Cursor. 4 - Enable/Disable Blink. : ");
   noexitloop();
   while (!Resume) {
     if (Serial.available()) {
       chr = Serial.read();
       Serial.print(chr);
-      ReturnToline();
+      Term.Return();
       Resume = true;
     }
   }
@@ -479,7 +471,7 @@ void runLCDutility() {
         if (Serial.available()) {
           chr = Serial.read();
           Serial.print(chr);
-          ReturnToline();
+          Term.Return();
           Resume = true;
         }
       }
@@ -492,7 +484,7 @@ void runLCDutility() {
     break;
 
     case '3': // 3 = Cursor
-      ReturnToline();
+      Term.Return();
       Serial.print("Enable or Disable? 1 - Enable / 2 - Disable : ");
       while (!Resume) {
         if (Serial.available()) {
@@ -512,13 +504,13 @@ void runLCDutility() {
     break;
 
     case '4': // 4 = Blink
-      ReturnToline();
+      Term.Return();
       Serial.print("Enable or Disable? 1 - Enable / 2 - Disable : ");
       while (!Resume) {
         if (Serial.available()) {
           chr = Serial.read();
           Serial.print(chr);
-          ReturnToline();
+          Term.Return();
           Resume = true;
         }
       }
@@ -693,7 +685,7 @@ void runEEPROM() {
           Serial.print(chr);
 
           if (chr == NL || chr == CR) {
-            ReturnToline();
+            Term.Return();
             Resume = true;
           }
 
@@ -776,7 +768,7 @@ void DHT11() {
 
       if (chr == NL || chr == CR) {
         lcd.clear();
-        ReturnToline();
+        Term.Return();
         Resume = true;
       }
     }
@@ -830,25 +822,19 @@ void DHT11() {
   }
 }
 
-void ReturnToline() {
-  Serial.write(CR);
-  Serial.write(NL);
-}
-
 void runRave() {
 
-  int Rave; // Rave even/odd switch
+  uint8_t Rave; // Rave even/odd switch
 
   Serial.println("Press b To exit");
 
   while (!exitloop) {
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 20; i++) {
       lcd.write(255);
       lcd.print(" ");
     }
 
-    lcd.setCursor(0, 1);
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 20; i++) {
       lcd.print(" ");
       lcd.write(255);
     }
@@ -856,13 +842,12 @@ void runRave() {
     lcd.setCursor(0, 0);
     delay(200);
 
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 20; i++) {
       lcd.print(" ");
       lcd.write(255);
     }
 
-    lcd.setCursor(0, 1);
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 20; i++) {
       lcd.write(255);
       lcd.print(" ");
     }
@@ -900,7 +885,7 @@ int PinSelect(int MaxDigits) {
       chr = Serial.read();
       if (chr == NL || chr == CR) {
         if (c > 0) {
-          ReturnToline();
+          Term.Return();
           return Pin;
         }
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
@@ -1013,7 +998,7 @@ int AddrSelect() {
       chr = Serial.read();
       if (chr == NL || chr == CR) {
         if (c > 0) {
-          ReturnToline();
+          Term.Return();
           return Addr;
         }
       } else if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {

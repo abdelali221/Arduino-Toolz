@@ -9,12 +9,6 @@
 
 class DHT11{
 public:
-  /**
-   * @fn read
-   * @brief Read DHT11 data
-   * @param pin: Connect the IO port of the DHT11 data port.
-   * @return NONE    
-   */
   void readata(int pin);
   int humidity;
   int temperature;
