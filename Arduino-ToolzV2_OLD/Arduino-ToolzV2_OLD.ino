@@ -107,7 +107,7 @@ void CommandSet() {
     runRave();
   } else if (strcmp(command, "Terminal") == 0) {
     runTerminal();
-  }else if (strcmp(command, "UltraR") == 0) {
+  } else if (strcmp(command, "UltraR") == 0) {
     runUltraR();
   } else {
     Serial.println("Invalid command!");
