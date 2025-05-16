@@ -68,6 +68,8 @@ void CommandSet() {
     DigitalTool();
   } else if (strcmp(command, "EEPROM") == 0) {
     runEEPROM();
+  } else if (strcmp(command, "Rave") == 0) {
+    runRave();
   } else if (strcmp(command, "Tone") == 0) {
     runTone();
   } else if (strcmp(command, "UltraR") == 0) {
@@ -293,6 +295,49 @@ void AnalogTool() {
 
       if (chr == 'b') { // Exits if b is sent
         Term.Return();
+        exitloop = true;
+      }
+    }
+  }
+}
+
+void runRave() {
+
+  uint8_t Rave; // Rave even/odd switch
+
+  Serial.println("Press b To exit");
+
+  while (!exitloop) {
+    for (int i = 0; i < 20; i++) {
+      lcd.write(255);
+      lcd.print(F(" "));
+    }
+
+    for (int i = 0; i < 20; i++) {
+      lcd.print(F(" "));
+      lcd.write(255);
+    }
+
+    lcd.setCursor(0, 0);
+    delay(200);
+
+    for (int i = 0; i < 20; i++) {
+      lcd.print(F(" "));
+      lcd.write(255);
+    }
+
+    for (int i = 0; i < 20; i++) {
+      lcd.write(255);
+      lcd.print(F(" "));
+    }
+
+    delay(200);
+
+    if (Serial.available()) {
+      char data = Serial.read();
+
+      if (data == 'b') {
+        lcd.clear();
         exitloop = true;
       }
     }
