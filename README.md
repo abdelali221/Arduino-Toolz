@@ -22,8 +22,8 @@ You should use a software like Putty or Tera Term.
 # The commands : 
 
  - Terminal
- - Analog
- - Digital
+ - Analog-Tool
+ - Digital-Tool
  - Sensor (DHT11) 
  - UltraR (For the UltraSonic Sensor)
  - LCD (LCD tools)
@@ -38,9 +38,10 @@ You should use a software like Putty or Tera Term.
  - b 0.9.3 (major serial command system update)
  - b 0.9.4 (bug fixes/updated serial system)
  - 1.0 (FIRST RELEASE!)
- - 2.0 (MAJOR UPDATE : ENTIRELY REWRITTEN/MASSIVE IMPROVEMENTS)
- - 2.1 (added UltraR to V2/changed mind about other functions because of Dynamic Memory limitations/improved user-friendliness)
+ - 2.0 (MAJOR UPDATE)
+ - 2.1 (added UltraR to V2/mproved user-friendliness)
  - 2.2 (Major update : Decreased RAM usage to a THIRD of what it used to be/ Fused the Serial-Only with the LCD version)
+ - 2.3 (Improved LCD displays compatibility)
  
 # Notes :
 
