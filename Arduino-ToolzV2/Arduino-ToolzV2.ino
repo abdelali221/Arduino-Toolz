@@ -70,6 +70,8 @@ void CommandSet() {
     runEEPROM();
   } else if (strcmp(command, "Rave") == 0) {
     runRave();
+  } else if (strcmp(command, "Terminal") == 0){
+    runTerminal();
   } else if (strcmp(command, "Tone") == 0) {
     runTone();
   } else if (strcmp(command, "UltraR") == 0) {
@@ -127,9 +129,69 @@ void StartSequence() {
   Serial.print(F(" Github : https://github.com/abdelali221"));
   for (size_t i=0;i<2;i++)
     Term.Return();
-  Serial.print(F("Ver 2.2"));
+  Serial.print(F("Ver 2.3"));
   for (size_t i=0;i<2;i++)
     Term.Return();
+}
+
+void runTerminal() {
+  uint8_t c = 0;
+  lcd.clear();
+  Term.Clear();
+  while (1) {
+    if (Serial.available()) {
+      if (Serial.available() > 0) {
+        char chr = Serial.read(); // Read the data character by character
+
+        if (chr != CR && chr != NL) { // Verify if there is no NL or CR
+          if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
+            Serial.print("\b\e[K"); // BackSpace command
+              if (c > 0) {
+                c--;
+                if (c < LCD_COLUMNS) { // Goes back by one, Prints " " and return back
+                  lcd.setCursor(c, 0);
+                  lcd.print(" ");
+                  lcd.setCursor(c, 0);
+                } else if (c < LCD_COLUMNS * 2) {
+                  lcd.setCursor(c - LCD_COLUMNS, 1);
+                  lcd.print(" ");
+                  lcd.setCursor(c - LCD_COLUMNS, 1);
+                } else if (c < LCD_COLUMNS * 3) {
+                  lcd.setCursor(c - LCD_COLUMNS, 0);
+                  lcd.print(" ");
+                  lcd.setCursor(c - LCD_COLUMNS, 0);
+                } else if (c < LCD_COLUMNS * 4) {
+                  lcd.setCursor(c - LCD_COLUMNS * 2, 1);
+                  lcd.print(" ");
+                  lcd.setCursor(c - LCD_COLUMNS * 2, 1);
+                }
+              }
+          } else { // LCD Cursor position is controlled using the c variable (c for cursor)
+            if (c < LCD_COLUMNS) {
+              lcd.setCursor(c, 0);
+            } else if (c < LCD_COLUMNS * 2) {
+              lcd.setCursor(c - LCD_COLUMNS, 1);
+            } else if (c < LCD_COLUMNS * 3) {
+              lcd.setCursor(c - LCD_COLUMNS, 0);
+            } else if (c < LCD_COLUMNS * 4) {
+              lcd.setCursor(c - LCD_COLUMNS * 2, 1);
+            }
+            if (c == LCD_COLUMNS * LCD_ROWS) {
+              c = 0;
+              lcd.clear();
+            }
+            c++; // Add one each time a character is printed
+            lcd.write(chr); // Prints the char
+            Serial.print(chr); // Echo the char
+          }
+        } else {
+          Term.Return();
+          c = 0;
+          lcd.clear();
+        }
+      }
+    }
+  }
 }
 
 void DigitalTool() {
