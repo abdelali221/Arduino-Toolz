@@ -14,6 +14,7 @@ Term Term;
 #define BACK_SPACE_ALT 8
 #define DHT11_PIN 4
 #define BELL 7
+#define ESC 27
 #define LCD_ROWS 4 // LCD Rows
 #define LCD_COLUMNS 16 // LCD Columns
 #define LCD_ADDRESS 0x26 // LCD Address
@@ -101,7 +102,7 @@ void StringRead(char* buffer, int maxLength) {
           Serial.print(F("\b \b")); // Erase character on serial monitor
           c--;
         }
-      } else { 
+      } else if (chr >= '!') { 
         if (c < maxLength) {
           buffer[c++] = chr;
           Serial.print(chr);
@@ -119,7 +120,7 @@ void StartSequence() {
   lcd.clear(); // Clear the screen
   lcd.print(F("  Arduino Toolz"));
   lcd.setCursor(4, 1);
-  lcd.print(F("Ver 2.1"));
+  lcd.print(F("Ver 2.3"));
   Serial.print(F("// Arduino Toolz "));
   for (size_t i=0;i<2;i++)
     Term.Return();
@@ -166,7 +167,10 @@ void runTerminal() {
                   lcd.setCursor(c - LCD_COLUMNS * 2, 1);
                 }
               }
-          } else { // LCD Cursor position is controlled using the c variable (c for cursor)
+          } else if (chr == ESC) {
+            StartSequence();
+            return;
+          } else if (chr >= '!') { // LCD Cursor position is controlled using the c variable (c for cursor)
             if (c < LCD_COLUMNS) {
               lcd.setCursor(c, 0);
             } else if (c < LCD_COLUMNS * 2) {
@@ -181,7 +185,7 @@ void runTerminal() {
               lcd.clear();
             }
             c++; // Add one each time a character is printed
-            lcd.write(chr); // Prints the char
+            lcd.print(chr); // Prints the char
             Serial.print(chr); // Echo the char
           }
         } else {
