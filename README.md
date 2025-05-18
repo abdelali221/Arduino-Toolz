@@ -41,7 +41,7 @@ You should use a software like Putty or Tera Term.
  - 2.0 (MAJOR UPDATE)
  - 2.1 (added UltraR to V2/mproved user-friendliness)
  - 2.2 (Major update : Decreased RAM usage to a THIRD of what it used to be/ Fused the Serial-Only with the LCD version)
- - 2.3 (Improved LCD displays compatibility)
+ - 2.3 (Improved LCD displays compatibility/ Fixed some minor bugs)
  
 # Notes :
 
