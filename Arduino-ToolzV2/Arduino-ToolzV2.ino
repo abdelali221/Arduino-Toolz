@@ -66,7 +66,12 @@ void CommandSet() {
   } else if (strcmp(command, "DHT11") == 0) {
     DHT11();
   } else if (strcmp(command, "Digital") == 0) {
-    DigitalTool();
+    Serial.print(F("This Command isn't available anymore"));
+    Term.Return();
+    Serial.print(F("You can get the separate Digital-Toolz which is way better."));
+    Term.Return();
+    Serial.print(F("https://github.com/abdelali221/Digital-Toolz/"));
+    Term.Return();
   } else if (strcmp(command, "EEPROM") == 0) {
     runEEPROM();
   } else if (strcmp(command, "Rave") == 0) {
@@ -120,7 +125,7 @@ void StartSequence() {
   lcd.clear(); // Clear the screen
   lcd.print(F("  Arduino Toolz"));
   lcd.setCursor(4, 1);
-  lcd.print(F("Ver 2.3"));
+  lcd.print(F("Ver 2.4"));
   Serial.print(F("// Arduino Toolz "));
   for (size_t i=0;i<2;i++)
     Term.Return();
@@ -130,63 +135,111 @@ void StartSequence() {
   Serial.print(F(" Github : https://github.com/abdelali221"));
   for (size_t i=0;i<2;i++)
     Term.Return();
-  Serial.print(F("Ver 2.3"));
+  Serial.print(F("Ver 2.4"));
   for (size_t i=0;i<2;i++)
     Term.Return();
 }
 
 void runTerminal() {
   uint8_t c = 0;
+  uint8_t i = 0;
+  char ESCString[6];
+  bool GetCommand = false;
   lcd.clear();
   Term.Clear();
+  lcd.cursor_on();
   while (1) {
     if (Serial.available()) {
-      if (Serial.available() > 0) {
+      while (Serial.available() > 0) {
         char chr = Serial.read(); // Read the data character by character
-
         if (chr != CR && chr != NL) { // Verify if there is no NL or CR
           if (chr == BACK_SPACE || chr == BACK_SPACE_ALT) {
             Serial.print("\b\e[K"); // BackSpace command
-              if (c > 0) {
-                c--;
-                if (c < LCD_COLUMNS) { // Goes back by one, Prints " " and return back
-                  lcd.setCursor(c, 0);
-                  lcd.print(" ");
-                  lcd.setCursor(c, 0);
-                } else if (c < LCD_COLUMNS * 2) {
-                  lcd.setCursor(c - LCD_COLUMNS, 1);
-                  lcd.print(" ");
-                  lcd.setCursor(c - LCD_COLUMNS, 1);
-                } else if (c < LCD_COLUMNS * 3) {
-                  lcd.setCursor(c - LCD_COLUMNS, 0);
-                  lcd.print(" ");
-                  lcd.setCursor(c - LCD_COLUMNS, 0);
-                } else if (c < LCD_COLUMNS * 4) {
-                  lcd.setCursor(c - LCD_COLUMNS * 2, 1);
-                  lcd.print(" ");
-                  lcd.setCursor(c - LCD_COLUMNS * 2, 1);
+            if (c > 0) {
+              c--;
+              if (c < LCD_COLUMNS) { // Goes back by one, Prints " " and return back
+                lcd.setCursor(c, 0);
+                lcd.print(" ");
+                lcd.setCursor(c, 0);
+              } else if (c < LCD_COLUMNS * 2) {
+                lcd.setCursor(c - LCD_COLUMNS, 1);
+                lcd.print(" ");
+                lcd.setCursor(c - LCD_COLUMNS, 1);
+              } else if (c < LCD_COLUMNS * 3) {
+                lcd.setCursor(c - LCD_COLUMNS, 0);
+                lcd.print(" ");
+                lcd.setCursor(c - LCD_COLUMNS, 0);
+              } else if (c < LCD_COLUMNS * 4) {
+                lcd.setCursor(c - LCD_COLUMNS * 2, 1);
+                lcd.print(" ");
+                lcd.setCursor(c - LCD_COLUMNS * 2, 1);
+              }
+            }
+          } else if (chr == ESC) {
+            for (uint8_t j=0;j<6;j++) {
+              ESCString[j] = NULL; // Echo the char
+              i = 0;
+            }
+            GetCommand = true;
+            delay(10);
+            while (GetCommand) {    
+              for (uint8_t i=0;i<6;i++) {
+                if (Serial.available() > 0) {
+                  chr = Serial.read();
+                  ESCString[i] = chr;
                 }
               }
-          } else if (chr == ESC) {
-            StartSequence();
-            return;
-          } else if (chr >= '!') { // LCD Cursor position is controlled using the c variable (c for cursor)
-            if (c < LCD_COLUMNS) {
-              lcd.setCursor(c, 0);
-            } else if (c < LCD_COLUMNS * 2) {
-              lcd.setCursor(c - LCD_COLUMNS, 1);
-            } else if (c < LCD_COLUMNS * 3) {
-              lcd.setCursor(c - LCD_COLUMNS, 0);
-            } else if (c < LCD_COLUMNS * 4) {
-              lcd.setCursor(c - LCD_COLUMNS * 2, 1);
+              if (ESCString[0] == '[') {
+                if (ESCString[2] == '~') {
+                  if (ESCString[1] == '4') {
+                    StartSequence();
+                    return;
+                  }
+                } else if (ESCString[1] == 'D') {
+                  Term.CursMove('D');
+                  GetCommand = false;
+                  if (c > 0) {
+                    c--;
+                    SetLCDCurs(c);
+                  }
+                } else if (ESCString[1] == 'C') {
+                  Term.CursMove('C');
+                  GetCommand = false;
+                  if (c < LCD_COLUMNS * LCD_ROWS - 1) {
+                    c++;
+                    SetLCDCurs(c);
+                  }
+                } else if (ESCString[1] == 'A') {
+                  Term.CursMove('A');
+                  GetCommand = false;
+                  if (c >= LCD_COLUMNS) {
+                    c -= LCD_COLUMNS;
+                    SetLCDCurs(c);
+                  }
+                } else if (ESCString[1] == 'B') {
+                  Term.CursMove('B');
+                  GetCommand = false;
+                  if (c < LCD_COLUMNS * LCD_ROWS) {
+                    c += LCD_COLUMNS;
+                    SetLCDCurs(c);
+                  }
+                } else {
+                  GetCommand = false;
+                  chr = ESCString[1];
+                }
+              } else {
+                GetCommand = false;
+              }
             }
+          } else if (chr >= '!' || chr == ' ') { // LCD Cursor position is controlled using the c variable (c for cursor)
+            SetLCDCurs(c);
             if (c == LCD_COLUMNS * LCD_ROWS) {
               c = 0;
               lcd.clear();
             }
             c++; // Add one each time a character is printed
             lcd.print(chr); // Prints the char
-            Serial.print(chr); // Echo the char
+            Serial.print(chr); // Echo back to the terminal
           }
         } else {
           Term.Return();
@@ -198,122 +251,15 @@ void runTerminal() {
   }
 }
 
-void DigitalTool() {
-
-  int ReadWrite_Switch = 0;
-  char chr = 0;
-  int Pin = ValSelect(13, 1); // Pin Variable for Analog/Digital Tools
-  int read;
-  int ANSread = 2;
-
-  if (Pin == -1) {
-    Serial.println(F("Canceled."));
-    return;
-  }
-
-  if (Pin < 0 || Pin > 13) { // Checks if the Pin number is valid
-    Serial.println(F("   Invalid PIN number!"));
-    delay(1000);
-    return;
-  }
-
-  noexitloop();
-  Serial.println(F("Read or Write?  "));
-  Serial.print(F("R=0  W=1: "));
-
-  while (!Resume) {
-    if (Serial.available()) {
-      Resume = true;
-      ReadWrite_Switch = Serial.read() - 48; // Read the instruction
-      Serial.println(ReadWrite_Switch); // Print the selected instruction
-      delay(500);
-    }
-  }
-
-  if (ReadWrite_Switch < 0 || ReadWrite_Switch > 1) { // Checks if the value is valid
-    Serial.println(F(" Invalid Choice!"));
-    delay(1000);
-    return;
-  }
-
-  noexitloop();
-  Serial.println(F("Press b To exit"));
-  chr = '0';
-
-  switch (ReadWrite_Switch) {
-
-    case 0: // Read
-
-      Serial.println(F("Read"));
-      delay(1000);
-      Serial.print(F("PIN D"));
-      Serial.print(Pin);
-      Serial.print(F(" : "));
-
-      while (!exitloop) {
-
-        pinMode(Pin, INPUT);
-        read = digitalRead(Pin);
-        
-        if (read != ANSread) {
-          Serial.print(read);
-        }
-        ANSread = read;
-
-        if (Serial.available()) {
-          chr = Serial.read();
-
-          if (chr == 'b') {
-            exitloop = true;
-          }
-        }
-      }
-    break;
-
-    case 1: // Write
-
-      Serial.println(F("    Write"));
-      delay(1000);
-      pinMode(Pin, OUTPUT);
-      Serial.print(F("PIN D"));
-      Serial.print(Pin);
-      Serial.print(F(" : "));
-      Serial.print(F("LOW "));
-      
-      
-      while (!exitloop) {
-        
-        if (Serial.available()) {
-          chr = Serial.read();
-        }
-                
-        switch (chr) {
-          case '0':
-            for (int i = 0; i < 4; i++) {
-              Serial.print(F("\b \b"));
-            }
-            Serial.print(F("LOW "));
-            digitalWrite(Pin, LOW);
-          break;
-
-          case '1':
-            for (int i = 0; i < 4; i++) {
-              Serial.print(F("\b \b"));
-            }
-            Serial.print(F("HIGH"));
-            digitalWrite(Pin, HIGH);
-          break;
-
-          case 'b':
-            Term.Return();
-            exitloop = true;
-          break;
-        }
-
-        chr = 2;
-        
-      }
-    break;
+void SetLCDCurs(uint8_t c) {
+  if (c < LCD_COLUMNS) {
+    lcd.setCursor(c, 0);
+  } else if (c < LCD_COLUMNS * 2) {
+    lcd.setCursor(c - LCD_COLUMNS, 1);
+  } else if (c < LCD_COLUMNS * 3) {
+    lcd.setCursor(c - LCD_COLUMNS, 0);
+  } else if (c < LCD_COLUMNS * 4) {
+    lcd.setCursor(c - LCD_COLUMNS * 2, 1);
   }
 }
 
