@@ -123,10 +123,10 @@ void StartSequence() {
   lcd.backlight(); // Backlight On
   lcd.noAutoscroll();
   lcd.clear(); // Clear the screen
-  lcd.print(F("  Arduino Toolz"));
+  lcd.print(F("  Arduino-Toolz"));
   lcd.setCursor(4, 1);
   lcd.print(F("Ver 2.4"));
-  Serial.print(F("// Arduino Toolz "));
+  Serial.print(F("// Arduino-Toolz "));
   for (size_t i=0;i<2;i++)
     Term.Return();
   Serial.print(F(" Made by Abdelali221"));
