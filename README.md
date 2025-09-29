@@ -23,7 +23,7 @@ You should use a software like Putty or Tera Term.
 
  - Terminal
  - Analog-Tool
- - Digital-Tool
+ - Digital-Tool (Removed, check https://github.com/abdelali221/digital-toolz)
  - Sensor (DHT11) 
  - UltraR (For the UltraSonic Sensor)
  - LCD (LCD tools)
@@ -37,12 +37,11 @@ You should use a software like Putty or Tera Term.
  - b 0.9.2 (fixed bugs/changed serialread stuff)
  - b 0.9.3 (major serial command system update)
  - b 0.9.4 (bug fixes/updated serial system)
- - 1.0 (FIRST RELEASE!)
- - 2.0 (MAJOR UPDATE)
- - 2.1 (added UltraR to V2/mproved user-friendliness)
+ - 1.0 (First Stable Release)
+ - 2.0 (Code was entirely rewritten)
+ - 2.1 (Added UltraR to V2/Improved user-friendliness)
  - 2.2 (Major update : Decreased RAM usage to a THIRD of what it used to be/ Fused the Serial-Only with the LCD version)
  - 2.3 (Improved LCD displays compatibility/ Fixed some minor bugs)
  
 # Notes :
-
-	DON'T USE THE Arduino-ToolzV1 NOR Arduino-ToolzV2_OLD SINCE THEY ARE BOTH OUTDATED, Use ArduinoToolzV2 instead.
+	Please do not use Arduino-ToolzV1 nor Arduino-ToolzV2_OLD since they are outdated and/or broken, Use ArduinoToolzV2 instead.
