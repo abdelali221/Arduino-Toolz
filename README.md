@@ -45,3 +45,5 @@ You should use a software like Putty or Tera Term.
  
 # Notes :
 	Please do not use Arduino-ToolzV1 nor Arduino-ToolzV2_OLD since they are outdated and/or broken, Use ArduinoToolzV2 instead.
+
+Software brought to you by Abdelali221.
