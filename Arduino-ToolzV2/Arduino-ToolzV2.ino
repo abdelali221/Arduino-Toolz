@@ -82,6 +82,8 @@ void CommandSet() {
     runTone();
   } else if (strcmp(command, "UltraR") == 0) {
     runUltraR();
+  } else if (strcmp(command, "LCD") == 0) {
+    runLCDutility();
   } else {
     Serial.println(F("Invalid command!"));
   }
@@ -140,6 +142,106 @@ void StartSequence() {
     Term.Return();
 }
 
+
+void runLCDutility() {
+
+  char chr = 0;  
+  Serial.print(F("// LCDutility"));
+  Term.Return();
+  Serial.print(F("What do you want to do?"));
+  Term.Return();
+  Serial.print(F(" 1 - Init the LCD screen. 2 - Turn the Backlight on/off."));
+  Term.Return();
+  Serial.print(F(" 3 - Enable/Disable Cursor. 4 - Enable/Disable Blink. : "));
+  noexitloop();
+  while (!Resume) {
+    if (Serial.available()) {
+      chr = Serial.read();
+      Serial.print(chr);
+      Term.Return();
+      Resume = true;
+    }
+  }
+  noexitloop();
+
+  switch (chr) {
+
+    case '1':// 1 = LCDinit
+      lcd.init();
+      lcd.noBacklight();
+      delay(500);
+      lcd.backlight();
+
+      for (int i = 0; i < 10; i++) {
+        delay(150);
+        lcd.print(F("TESTING DISPLAY"));
+      }
+
+      lcd.clear();
+    break;
+
+    case '2': // 2 = Backlight
+      Serial.write(CR);
+      Serial.write(NL);
+      Serial.print(F("ON or OFF? 1 - ON / 2 - OFF : "));
+      while (!Resume) {
+        if (Serial.available()) {
+          chr = Serial.read();
+          Serial.print(chr);
+          Term.Return();
+          Resume = true;
+        }
+      }
+
+      if (chr == '1') {
+        lcd.backlight();
+      } else if (chr == '2') {
+        lcd.noBacklight();
+      }
+    break;
+
+    case '3': // 3 = Cursor
+      Term.Return();
+      Serial.print(F("Enable or Disable? 1 - Enable / 2 - Disable : "));
+      while (!Resume) {
+        if (Serial.available()) {
+          chr = Serial.read();
+          Serial.print(chr);
+          Serial.write(CR);
+          Serial.write(NL);
+          Resume = true;
+        }
+      }
+
+      if (chr == '1') {
+        lcd.cursor_on();
+      } else if (chr == '2') {
+        lcd.cursor_off();
+      }
+    break;
+
+    case '4': // 4 = Blink
+      Term.Return();
+      Serial.print(F("Enable or Disable? 1 - Enable / 2 - Disable : "));
+      while (!Resume) {
+        if (Serial.available()) {
+          chr = Serial.read();
+          Serial.print(chr);
+          Term.Return();
+          Resume = true;
+        }
+      }
+
+      if (chr == '1') {
+        lcd.blink_on();
+      } else if (chr == '2') {
+        lcd.blink_off();
+      }
+    break;
+  }
+
+}
+
 void runTerminal() {
   uint8_t c = 0;
   uint8_t i = 0;
@@ -177,7 +279,7 @@ void runTerminal() {
             }
           } else if (chr == ESC) {
             for (uint8_t j=0;j<6;j++) {
-              ESCString[j] = NULL; // Echo the char
+              ESCString[j] = 0; // Echo the char
               i = 0;
             }
             GetCommand = true;
@@ -196,28 +298,28 @@ void runTerminal() {
                     return;
                   }
                 } else if (ESCString[1] == 'D') {
-                  Term.CursMove('D');
+                  //Term.CursMove('D');
                   GetCommand = false;
                   if (c > 0) {
                     c--;
                     SetLCDCurs(c);
                   }
                 } else if (ESCString[1] == 'C') {
-                  Term.CursMove('C');
+                  //Term.CursMove('C');
                   GetCommand = false;
                   if (c < LCD_COLUMNS * LCD_ROWS - 1) {
                     c++;
                     SetLCDCurs(c);
                   }
                 } else if (ESCString[1] == 'A') {
-                  Term.CursMove('A');
+                  //Term.CursMove('A');
                   GetCommand = false;
                   if (c >= LCD_COLUMNS) {
                     c -= LCD_COLUMNS;
                     SetLCDCurs(c);
                   }
                 } else if (ESCString[1] == 'B') {
-                  Term.CursMove('B');
+                  //Term.CursMove('B');
                   GetCommand = false;
                   if (c < LCD_COLUMNS * LCD_ROWS) {
                     c += LCD_COLUMNS;
@@ -358,10 +460,10 @@ void runRave() {
 
 void runEEPROM() {
 
-  int ReadWrite_Switch = 0;
-  int value = 0; // EEPROM Read/Write
-  int address = 0; // EEPROM Address
-  int EVF = 0; // EEPROM Value Format Switch
+  uint8_t ReadWrite_Switch = 0;
+  uint8_t value = 0; // EEPROM Read/Write
+  uint16_t address = 0; // EEPROM Address
+  uint8_t EVF = 0; // EEPROM Value Format Switch
 
   Serial.println(F("  EEPROM Tool"));
   Term.Return();
@@ -495,7 +597,7 @@ void runEEPROM() {
           }
         }
       }
-      for (int i = 0; i <= EEPROM.length(); i++) {
+      for (uint8_t i = 0; i <= EEPROM.length(); i++) {
         EEPROM.write(i, 0);
         Serial.print(F("Address : "));
         Serial.print(i);
